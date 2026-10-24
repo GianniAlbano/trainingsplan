@@ -1,6 +1,6 @@
 # Trainingsplan-App – Entwicklerhandbuch
 
-Stand: 24.10.2026 · App-Version `2026-10-23-1`
+Stand: 24.10.2026 · App-Version `2026-10-24-1`
 
 Diese Datei ist der Einstieg für jeden Chat, der am Code arbeitet. Sie liegt gleichlautend im Repository (`ENTWICKLUNG.md`) und im Claude-Projekt „Marathon incoming“ („Trainingsplan-App – Entwicklerhandbuch“).
 
@@ -95,6 +95,7 @@ Gesamturteil: „Auf Kurs“, „Achtung“ (1 rot oder ≥ 2 gelb), „Gegenste
 
 - Minimalistisch nach Giannis Vorlage: dunkler Schiefergrund, dünne Lato-Schrift, Großbuchstaben-Labels mit Laufweite, farbige Haarlinien statt Kästen und Schatten.
 - Handy: kein Scrollen der ganzen Seite; Inhalte passen auf den Bildschirm (sonst kompakter machen oder Nebensachen ausblenden). Fenster als Blätter von unten, nach unten wegwischbar.
+- Handy-Rahmen: `.app` liegt mit `position:fixed; inset:0` über dem ganzen Bildschirm. Statusleiste (`safe-area-inset-top`) hält `.app` frei, den Home-Balken (`safe-area-inset-bottom`) nur die Tab-Leiste `.mtabs`. Diese Abstände nie zusätzlich auf `html`/`:root` legen, sonst werden sie doppelt gerechnet.
 - Texte auf Deutsch, Du-Form, kurz und konkret. Zahlen mit deutschem Format (Komma).
 
 ## Offene Ideen

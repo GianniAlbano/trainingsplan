@@ -2,9 +2,19 @@
 
 Neueste Version oben. Die Version entspricht `VERSION` in `sw.js`.
 
+## 2026-10-26 · Arbeitsweise über Pull Requests
+- Claude arbeitet jetzt direkt im Repository und schlägt Änderungen als Pull Request vor; `main` ist geschützt, Gianni gibt jede Änderung mit *Merge* frei.
+- `CLAUDE.md` (neu) verweist auf `ENTWICKLUNG.md`; das Handbuch beschreibt die neue Arbeitsweise. Die Code-Kopien im Claude-Projekt entfallen, das Repository ist die einzige Quelle.
+- Keine Änderung an der App.
+
+## 2026-10-24-1 · Handy füllt den ganzen Bildschirm
+- Handy-App liegt fest über dem ganzen Bildschirm (`position:fixed`), Statusleiste oben und Home-Balken unten werden genau einmal freigehalten.
+- Tab-Leiste etwas größer (Symbole 24 px, Schrift 10 px), Ringe auf „Heute“ passen sich der Bildschirmhöhe an.
+
 ## 2026-10-24 · Wachhalter für Supabase
 - GitHub Action `.github/workflows/keepalive.yml` ruft alle 3 Tage die Datenbank-Funktion `keepalive()` auf, damit Supabase das kostenlose Projekt nicht pausiert. URL und Key liest sie aus `config.js`.
 - `supabase/keepalive.sql` (neu) legt die Funktion an; dieselbe Funktion steht jetzt auch am Ende von `supabase/schema.sql`.
+- Korrektur 26.10.: Der Ablauf liest URL und Key nur noch aus den Zeilen `supabaseUrl:`/`supabaseKey:` (vorher griff er die Beispieladresse im Kommentar); `actions/checkout@v5`.
 - Keine Änderung an der App, `VERSION` bleibt `2026-10-23-1`.
 
 ## 2026-10-24 · Dokumentation

@@ -2,7 +2,7 @@
 
 Stand: 26.10.2026 · App-Version `2026-10-26-1`
 
-Diese Datei ist der Einstieg für jeden Chat, der am Code arbeitet. Sie liegt gleichlautend im Repository (`ENTWICKLUNG.md`) und im Claude-Projekt „Marathon incoming“ („Trainingsplan-App – Entwicklerhandbuch“).
+Diese Datei ist der Einstieg für jeden Chat, der am Code arbeitet. Sie liegt im Repository; das Claude-Projekt „Marathon incoming“ verweist nur noch hierher.
 
 ## Wo was liegt
 
@@ -11,21 +11,22 @@ Diese Datei ist der Einstieg für jeden Chat, der am Code arbeitet. Sie liegt gl
 | App (live) | https://giannialbano.github.io/trainingsplan/ |
 | Code (offizieller Stand) | GitHub-Repository `GianniAlbano/trainingsplan`, Branch `main`, GitHub Pages aus `/ (root)` |
 | Datenbank und Anmeldung | Supabase-Projekt `zrrrhbvhmwkfdduucnoh` (Region Frankfurt) |
-| Arbeitskopie für Claude | Projekt „Marathon incoming“: „Code – index.html“, „Code – sw.js“, „Supabase Schema.sql“, „CHANGELOG“ |
 | Trainingsplan (Inhalt) | Projekt-Dokument „Marathon-Trainingsplan Berlin 2027“ |
 | Alte Claude-Version (Archiv) | https://claude.ai/artifact/R6pHAXAfQam3NCy1ihKBWb – wird nicht mehr weiterentwickelt |
 
 Trainingsdaten liegen nur in Supabase und auf den Geräten, nie im Repository und nie im Projekt.
 
-## Arbeitsweise (ohne GitHub-Verbindung)
+## Arbeitsweise (Pull Requests)
 
-Claude ist nicht mit GitHub verbunden. Gianni überträgt Änderungen selbst.
+Claude ist über die GitHub-App nur mit diesem Repository verbunden. `main` ist durch eine Regel geschützt: Änderungen kommen nur über einen Pull Request hinein, und den gibt Gianni frei.
 
-1. **Start eines Code-Chats:** Claude liest dieses Handbuch und den CHANGELOG. Die Arbeitskopie im Projekt muss zur Live-Version passen: `VERSION` in „Code – sw.js“ = `VERSION` unter `…/trainingsplan/sw.js`. Weicht sie ab (z. B. weil direkt in GitHub geändert wurde), lädt Gianni die geänderte Datei in den Chat hoch.
-2. **Änderung:** Claude baut auf der Arbeitskopie auf, ändert nur, was gewünscht ist, und testet im Browser (Handy- und Webansicht, ohne Skriptfehler).
-3. **Bei jeder Änderung** erhöht Claude `VERSION` in `sw.js` (Format `JJJJ-MM-TT-n`) und ergänzt den CHANGELOG.
-4. **Übergabe:** Claude schickt die geänderten Dateien als Download, dazu eine Commit-Nachricht und die Liste, welche Dateien in welchen Ordner gehören. Gleichzeitig aktualisiert Claude die Arbeitskopie im Projekt (Code-Dokumente, CHANGELOG, bei Bedarf dieses Handbuch).
-5. **Commit:** Gianni lädt die Dateien in GitHub hoch (*Add file → Upload files*, gleichnamige Dateien werden ersetzt) und übernimmt die Commit-Nachricht. Nach 1–2 Minuten ist die Version live, auf dem Handy aktiv beim übernächsten Öffnen der App.
+1. **Start:** Claude holt den aktuellen Stand von `main` und liest dieses Handbuch und den CHANGELOG. Das Repository ist die einzige Quelle – es gibt keine Code-Kopien im Claude-Projekt mehr.
+2. **Änderung:** auf einem neuen Zweig `claude/<kurzer-name>`. Nur ändern, was gewünscht ist; im Browser testen (Handy- und Webansicht, ohne Skriptfehler).
+3. **Bei jeder App-Änderung** `VERSION` in `sw.js` erhöhen (Format `JJJJ-MM-TT-n`) und den CHANGELOG ergänzen; dieses Handbuch anpassen, wenn sich Aufbau oder Regeln ändern.
+4. **Pull Request** mit kurzer Beschreibung auf Deutsch: was, warum, wie getestet. Claude schickt Gianni den Link.
+5. **Freigabe:** Gianni prüft unter *Files changed* und klickt *Merge pull request* → *Confirm merge* (danach *Delete branch*). Nach 1–2 Minuten ist die Version live, auf dem Handy aktiv beim übernächsten Öffnen der App.
+
+Ändert Gianni selbst etwas direkt in GitHub, ist das in Ordnung – Claude startet ohnehin immer vom aktuellen `main`.
 
 Nie ins Repository: `Trainingsplan-Daten.json` oder andere Sicherungen, Supabase-*Secret keys* (`sb_secret_…`, `service_role`). Der *Publishable key* in `config.js` ist öffentlich und darf dort stehen.
 
@@ -41,7 +42,7 @@ Nie ins Repository: `Trainingsplan-Daten.json` oder andere Sicherungen, Supabase
 | `supabase/keepalive.sql` | nur die Funktion `keepalive()` (für bestehende Projekte) | nie |
 | `.github/workflows/keepalive.yml` | GitHub Action „Supabase wach halten“, alle 3 Tage | selten |
 | `icons/`, `fonts/`, `vendor/` | Symbole, Lato-Schrift, supabase-js 2.117.3, SheetJS 0.18.5 | praktisch nie |
-| `ANLEITUNG.md`, `ENTWICKLUNG.md`, `CHANGELOG.md`, `README.md` | Dokumentation | bei Bedarf |
+| `ANLEITUNG.md`, `ENTWICKLUNG.md`, `CHANGELOG.md`, `README.md`, `CLAUDE.md` | Dokumentation | bei Bedarf |
 
 Neue Dateien, die offline verfügbar sein sollen, müssen in die Liste `FILES` in `sw.js`.
 
@@ -52,6 +53,7 @@ Die Datei ist in Abschnitte mit Kommentar-Überschriften gegliedert (`/* -------
 **CSS**
 - Design-Tokens in `:root` (Layout „Dunkel“, Standard), dazu `:root[data-look="light"]` (Hell) und `:root[data-look="sunrise"]` (Morgenlauf). Farben der Trainingsarten als `--t-<typ>`; eigene Farben setzt `applyColors()` als Inline-Variablen.
 - Web- und Handyansicht sind getrennt: Unter **640 px** wird `.wrap` ausgeblendet und `.app` (Handy-App) gezeigt. Änderungen am Handy dürfen die Webansicht nicht verändern und umgekehrt.
+- Die Handy-App liegt über dem ganzen Bildschirm und hält Statusleiste und Home-Balken selbst frei; Größen auf „Heute“ richten sich mit `min(…, dvh)` nach der Bildschirmhöhe. Details und iPhone-Ausgleich (`fitScreen()`) unter *Gestaltungsregeln*.
 
 **JavaScript** (alles in einer IIFE)
 - Konstanten: `TYPES` (Trainingsarten), `NONRUN` (Arten ohne Strecke: Kraft, Bouldern, Ruhetag), `FEELS`, `ZONES` (Pace-Zonen relativ zum Marathontempo), Hilfsfunktionen für Datum, Zeit, Pace.

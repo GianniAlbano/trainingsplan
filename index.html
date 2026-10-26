@@ -442,8 +442,8 @@ body.dragging .wpill:not(.drop){border-color:var(--line)}
   html,body{height:100%;overflow:hidden;overscroll-behavior:none}
   .wrap,.fab{display:none!important}
   /* Füllt immer den ganzen Bildschirm; Statusleiste oben und Home-Balken unten werden genau einmal freigehalten */
-  .app{display:grid;grid-template-rows:auto minmax(0,1fr) auto;position:fixed;inset:0;
-    padding-top:env(safe-area-inset-top,0px);
+  .app{display:grid;grid-template-rows:auto minmax(0,1fr) auto;position:fixed;inset:0;height:var(--app-h,auto);
+    padding-top:max(env(safe-area-inset-top,0px),var(--app-top,0px));
     padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
   .quick{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
   .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
@@ -470,7 +470,7 @@ body.dragging .wpill:not(.drop){border-color:var(--line)}
 .mlink{background:none;border:0;padding:0;color:var(--accent);font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
 
 /* Tab-Leiste */
-.mtabs{display:grid;grid-template-columns:repeat(5,1fr);align-items:end;border-top:1px solid var(--line);padding:8px 0 max(10px,env(safe-area-inset-bottom,0px))}
+.mtabs{display:grid;grid-template-columns:repeat(5,1fr);align-items:end;border-top:1px solid var(--line);padding:8px 0 max(10px,env(safe-area-inset-bottom,0px),var(--app-bot,0px))}
 .mtabs button{border:0;background:none;color:var(--muted);display:grid;justify-items:center;gap:3px;padding:4px 0;font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
 .mtabs button svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round}
 .mtabs button[aria-current="page"]{color:var(--accent)}
@@ -624,6 +624,9 @@ body.locked{overflow:hidden}
 .acct{display:grid;gap:4px;padding:6px 0 10px;border-bottom:1px solid var(--line-soft)}
 .acct b{font-weight:400;font-size:15px;overflow-wrap:anywhere}
 .acct span{font-size:12px;color:var(--muted)}
+.about{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13px}
+.about span{color:var(--muted)}
+.about b{font-weight:400;text-align:right;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 /* ---------- Handy: Größen passen sich dem Bildschirm an ---------- */
 @media (max-width:640px){
   .mtabs button{font-size:10px}
@@ -1868,7 +1871,54 @@ $("mBody").addEventListener("touchend", e => {
 
 document.querySelectorAll(".mtabs [data-tab]").forEach(b => b.onclick = () => { if (M.tab===b.dataset.tab) return; M.tab = b.dataset.tab; render(); });
 $("mFab").onclick = quickLog;
-PHONE.addEventListener("change", render);
+PHONE.addEventListener("change", () => { fitScreen(); render(); });
+
+/* ---------- Handy: Bildschirmrahmen in der iPhone-Web-App ----------
+   iOS 26 meldet einer App vom Home-Bildschirm teils eine zu kleine Höhe (Lücke unten)
+   und keinen Abstand für Statusleiste und Home-Balken. Dann messen wir selbst. */
+const IOS = /iPhone|iPod/.test(navigator.userAgent);
+const STANDALONE = navigator.standalone === true || matchMedia("(display-mode: standalone)").matches;
+const iosVersion = () => { const m = /OS (\d+)_(\d+)(?:_(\d+))?/.exec(navigator.userAgent); return m ? m.slice(1).filter(Boolean).join(".") : ""; };
+// Höhe der Statusleiste je Bildschirmhöhe (Punkte, Hochformat)
+const STATUSBAR = {667:20, 736:20, 812:50, 844:47, 852:59, 874:62, 896:48, 926:47, 932:59, 956:62};
+let insetProbe = null;
+function envInsets(){
+  if (!insetProbe){ insetProbe = document.createElement("div");
+    insetProbe.style.cssText = "position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)";
+    document.body.appendChild(insetProbe); }
+  const cs = getComputedStyle(insetProbe);
+  return { top: parseFloat(cs.paddingTop) || 0, bottom: parseFloat(cs.paddingBottom) || 0 };
+}
+const frame = { active:false, h:0, top:0, bot:0 };
+function fitScreen(){
+  const root = document.documentElement, env = envInsets();
+  root.style.removeProperty("--app-h"); root.style.removeProperty("--app-top"); root.style.removeProperty("--app-bot");
+  frame.active = false; frame.h = frame.top = frame.bot = 0;
+  if (!IOS || !STANDALONE || !PHONE.matches) return;
+  const el = document.activeElement; if (el && el.matches && el.matches("input,textarea,select")) return; // Tastatur offen
+  const portrait = innerHeight >= innerWidth;
+  const full = portrait ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height);
+  const gap = full - innerHeight;
+  // Lücke unten (2–3 cm): App auf die ganze Bildschirmhöhe ziehen
+  if (gap > 20 && gap < 240){ frame.h = full; root.style.setProperty("--app-h", full + "px"); }
+  const covers = frame.h || gap <= 20;
+  // Inhalt beginnt am oberen Bildschirmrand, iOS meldet aber keinen Abstand: Statusleiste selbst freihalten
+  if (portrait && covers && env.top < 1){ frame.top = STATUSBAR[full] || 47; root.style.setProperty("--app-top", frame.top + "px"); }
+  // Geräte mit Home-Balken (ab 812 pt Höhe): unten Platz lassen
+  if (portrait && covers && env.bottom < 1 && full >= 812){ frame.bot = 34; root.style.setProperty("--app-bot", frame.bot + "px"); }
+  frame.active = !!(frame.h || frame.top || frame.bot);
+}
+let fitTimer = null;
+const refit = () => { clearTimeout(fitTimer); fitTimer = setTimeout(fitScreen, 120); };
+addEventListener("resize", refit); addEventListener("orientationchange", refit); addEventListener("pageshow", refit);
+if (window.visualViewport) visualViewport.addEventListener("resize", refit);
+document.addEventListener("focusout", () => setTimeout(fitScreen, 350));
+document.addEventListener("visibilitychange", () => { if (!document.hidden) refit(); });
+fitScreen();
+async function appVersion(){
+  try { const k = (await caches.keys()).filter(n => n.startsWith("trainingsplan-")).sort().pop(); return k ? k.slice(14) : "–"; }
+  catch(e){ return "–"; }
+}
 
 /* Mehr-Menü */
 let moreArm = null, moreArmTimer = null, moreView = "main", colorPick = null;
@@ -1959,6 +2009,26 @@ function renderMore(){
     };
     return;
   }
+  if (moreView === "about"){
+    const env = envInsets(), v = iosVersion();
+    $("moreBody").innerHTML = `${grab}<h3>Über die App</h3>
+      <button class="linkbtn backlink" id="moreBack">‹ Einstellungen</button>
+      <div class="about">
+        <span>Version</span><b id="aboutVer">…</b>
+        <span>Geöffnet als</span><b>${STANDALONE ? "App vom Home-Bildschirm" : "Seite im Browser"}</b>
+        ${v ? `<span>iOS</span><b>${esc(v)}</b>` : ""}
+        <span>Bildschirm</span><b>${screen.width} × ${screen.height}</b>
+        <span>Sichtbare Fläche</span><b>${innerWidth} × ${innerHeight}</b>
+        <span>Abstand oben / unten</span><b>${Math.round(env.top)} / ${Math.round(env.bottom)}</b>
+        <span>Ausgleich</span><b>${frame.active ? `Höhe ${frame.h || "–"} · oben ${frame.top || "–"} · unten ${frame.bot || "–"}` : "aus"}</b>
+      </div>
+      <p class="note">Passt die Anzeige nicht, hilft ein Screenshot dieser Seite bei der Fehlersuche.</p>
+      <div class="actions"><div class="r"><button class="btn" id="moreClose">Fertig</button></div></div>`;
+    appVersion().then(x => { if ($("aboutVer")) $("aboutVer").textContent = x; });
+    $("moreBack").onclick = () => { moreView = "main"; renderMore(); };
+    $("moreClose").onclick = () => $("moreDlg").close();
+    return;
+  }
   if (moreView === "colors"){
     const own = (state.settings && state.settings.colors) || {};
     $("moreBody").innerHTML = `${grab}<h3>Trainingsfarben</h3>
@@ -1982,6 +2052,7 @@ function renderMore(){
     <button class="mrow" data-m="design">Design<small>Layout und Farben der Trainingsarten</small></button>
     <button class="mrow" data-m="export">Excel-Export<small>Alle absolvierten Einheiten als .xlsx</small></button>
     <button class="mrow" data-m="data">Daten sichern &amp; importieren<small>Sicherungsdatei erstellen oder einspielen</small></button>
+    <button class="mrow" data-m="about">Über die App<small>Version und Anzeige</small></button>
     ${HAS_CLOUD ? `<button class="mrow" data-m="account">Konto &amp; Abgleich<small>${esc(auth.user ? auth.user.email : "Nicht angemeldet")} · ${esc(syncText())}</small></button>` : ""}
     <button class="mrow ${moreArm==="copy"?"armed":""}" data-m="copy">${moreArm==="copy" ? "Zum Kopieren noch einmal tippen" : "Woche kopieren"}<small>Plan aus KW ${isoWeek(s0)} in KW ${isoWeek(addDays(s0,7))} übernehmen</small></button>
     ${ex ? `<button class="mrow danger ${moreArm==="ex"?"armed":""}" data-m="ex">${moreArm==="ex" ? "Wirklich alle Beispiele löschen?" : "Beispiele löschen"}<small>${ex} Einheiten aus dem Beispielplan</small></button>` : ""}
@@ -1995,6 +2066,7 @@ function renderMore(){
     else if (k==="design"){ moreView = "design"; renderMore(); }
     else if (k==="data"){ moreView = "data"; renderMore(); }
     else if (k==="account"){ moreView = "account"; renderMore(); }
+    else if (k==="about"){ moreView = "about"; renderMore(); }
     else if (k==="export"){ $("moreDlg").close(); exportExcel(); }
     else if (k==="copy"){
       if (moreArm !== "copy"){ armMore("copy"); return; }

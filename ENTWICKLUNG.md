@@ -1,6 +1,6 @@
 # Trainingsplan-App – Entwicklerhandbuch
 
-Stand: 26.10.2026 · App-Version `2026-10-24-1`
+Stand: 26.10.2026 · App-Version `2026-10-26-1`
 
 Diese Datei ist der Einstieg für jeden Chat, der am Code arbeitet. Sie liegt im Repository; das Claude-Projekt „Marathon incoming“ verweist nur noch hierher.
 
@@ -53,7 +53,7 @@ Die Datei ist in Abschnitte mit Kommentar-Überschriften gegliedert (`/* -------
 **CSS**
 - Design-Tokens in `:root` (Layout „Dunkel“, Standard), dazu `:root[data-look="light"]` (Hell) und `:root[data-look="sunrise"]` (Morgenlauf). Farben der Trainingsarten als `--t-<typ>`; eigene Farben setzt `applyColors()` als Inline-Variablen.
 - Web- und Handyansicht sind getrennt: Unter **640 px** wird `.wrap` ausgeblendet und `.app` (Handy-App) gezeigt. Änderungen am Handy dürfen die Webansicht nicht verändern und umgekehrt.
-- Die Handy-App liegt mit `position:fixed; inset:0` über dem ganzen Bildschirm und hält die Safe Areas (Statusleiste, Home-Balken) selbst frei. Größen auf „Heute“ richten sich mit `min(…, dvh)` nach der Bildschirmhöhe.
+- Die Handy-App liegt über dem ganzen Bildschirm und hält Statusleiste und Home-Balken selbst frei; Größen auf „Heute“ richten sich mit `min(…, dvh)` nach der Bildschirmhöhe. Details und iPhone-Ausgleich (`fitScreen()`) unter *Gestaltungsregeln*.
 
 **JavaScript** (alles in einer IIFE)
 - Konstanten: `TYPES` (Trainingsarten), `NONRUN` (Arten ohne Strecke: Kraft, Bouldern, Ruhetag), `FEELS`, `ZONES` (Pace-Zonen relativ zum Marathontempo), Hilfsfunktionen für Datum, Zeit, Pace.
@@ -106,6 +106,8 @@ Gesamturteil: „Auf Kurs“, „Achtung“ (1 rot oder ≥ 2 gelb), „Gegenste
 
 - Minimalistisch nach Giannis Vorlage: dunkler Schiefergrund, dünne Lato-Schrift, Großbuchstaben-Labels mit Laufweite, farbige Haarlinien statt Kästen und Schatten.
 - Handy: kein Scrollen der ganzen Seite; Inhalte passen auf den Bildschirm (sonst kompakter machen oder Nebensachen ausblenden). Fenster als Blätter von unten, nach unten wegwischbar.
+- Handy-Rahmen: `.app` liegt mit `position:fixed; inset:0` über dem ganzen Bildschirm. Die Statusleiste hält `.app` frei (`padding-top`), den Home-Balken nur die Tab-Leiste `.mtabs`. Diese Abstände nie zusätzlich auf `html`/`:root` legen, sonst werden sie doppelt gerechnet.
+- iPhone-Web-App: `fitScreen()` gleicht iOS-26-Fehler aus (zu kleine Höhe, fehlende Safe-Area-Werte) über die Variablen `--app-h`, `--app-top`, `--app-bot`. Statusleisten-Höhen je Bildschirmhöhe in `STATUSBAR`. Messwerte zeigt Einstellungen → „Über die App“.
 - Texte auf Deutsch, Du-Form, kurz und konkret. Zahlen mit deutschem Format (Komma).
 
 ## Offene Ideen

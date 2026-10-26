@@ -1,6 +1,6 @@
 # Trainingsplan-App – Entwicklerhandbuch
 
-Stand: 24.10.2026 · App-Version `2026-10-24-1`
+Stand: 24.10.2026 (Wachhalter) · App-Version `2026-10-23-1`
 
 Diese Datei ist der Einstieg für jeden Chat, der am Code arbeitet. Sie liegt gleichlautend im Repository (`ENTWICKLUNG.md`) und im Claude-Projekt „Marathon incoming“ („Trainingsplan-App – Entwicklerhandbuch“).
 
@@ -37,7 +37,9 @@ Nie ins Repository: `Trainingsplan-Daten.json` oder andere Sicherungen, Supabase
 | `sw.js` | Service Worker (Offline-Speicher), Konstante `VERSION` | bei jeder Änderung |
 | `config.js` | Supabase-URL und Publishable key | nie (enthält Giannis Werte) |
 | `manifest.webmanifest` | Name, Farben, Symbole für die Installation | selten |
-| `supabase/schema.sql` | Tabelle `docs` mit Zugriffsregeln | selten; neue Version im SQL Editor ausführen |
+| `supabase/schema.sql` | Tabelle `docs` mit Zugriffsregeln, Funktion `keepalive()` | selten; neue Version im SQL Editor ausführen |
+| `supabase/keepalive.sql` | nur die Funktion `keepalive()` (für bestehende Projekte) | nie |
+| `.github/workflows/keepalive.yml` | GitHub Action „Supabase wach halten“, alle 3 Tage | selten |
 | `icons/`, `fonts/`, `vendor/` | Symbole, Lato-Schrift, supabase-js 2.117.3, SheetJS 0.18.5 | praktisch nie |
 | `ANLEITUNG.md`, `ENTWICKLUNG.md`, `CHANGELOG.md`, `README.md` | Dokumentation | bei Bedarf |
 
@@ -59,6 +61,13 @@ Die Datei ist in Abschnitte mit Kommentar-Überschriften gegliedert (`/* -------
 - **Dialoge:** Einheit (`openSession`, Formular `#form`), Wettkampf & Ziele (`openRace`), Einstellungen (`renderMore`, Ansichten `main`, `design`, `colors`, `data`, `account`), Schnellbewertung nach dem Haken (`renderQuick`).
 - **Formcheck** (`formcheck()`, `formcheckHtml()`, `sessionFeedback()`, `showFeedback()`): regelbasiert, ohne KI, Grenzwerte in `GOALS`.
 - **Weiteres:** Excel-Export (`exportExcel`, SheetJS lokal), Sicherung/Import als JSON (`exportJson`, Import über `#importFile`), Ziehen von Einheiten (Maus und Gedrückthalten am Handy), Wischen zum Schließen von Blättern (`sheetSwipe`), Eingabemasken für Zeiten (`data-mask`) und Kommazahlen (`data-dec`), Registrierung des Service Workers.
+
+## Supabase wach halten
+
+Kostenlose Supabase-Projekte werden nach etwa 7 Tagen ohne Nutzung pausiert (Daten bleiben erhalten, *Resume project* im Dashboard). Dagegen ruft die GitHub Action `.github/workflows/keepalive.yml` alle 3 Tage um 06:17 UTC `POST /rest/v1/rpc/keepalive` mit dem Publishable key aus `config.js` auf. Die Funktion gibt nur `ok` zurück und liest keine Daten; der Rolle `anon` bleibt die Tabelle `docs` verschlossen.
+
+- Kontrolle: Repository → **Actions** → „Supabase wach halten“ (grüner Haken = ok). Von Hand starten mit **Run workflow**.
+- GitHub schaltet geplante Abläufe in öffentlichen Repositorys nach 60 Tagen ohne Commit ab und schickt eine Mail. Dann unter **Actions** wieder einschalten (*Enable workflow*).
 
 ## Datenmodell
 
@@ -95,7 +104,6 @@ Gesamturteil: „Auf Kurs“, „Achtung“ (1 rot oder ≥ 2 gelb), „Gegenste
 
 - Minimalistisch nach Giannis Vorlage: dunkler Schiefergrund, dünne Lato-Schrift, Großbuchstaben-Labels mit Laufweite, farbige Haarlinien statt Kästen und Schatten.
 - Handy: kein Scrollen der ganzen Seite; Inhalte passen auf den Bildschirm (sonst kompakter machen oder Nebensachen ausblenden). Fenster als Blätter von unten, nach unten wegwischbar.
-- Handy-Rahmen: `.app` liegt mit `position:fixed; inset:0` über dem ganzen Bildschirm. Statusleiste (`safe-area-inset-top`) hält `.app` frei, den Home-Balken (`safe-area-inset-bottom`) nur die Tab-Leiste `.mtabs`. Diese Abstände nie zusätzlich auf `html`/`:root` legen, sonst werden sie doppelt gerechnet.
 - Texte auf Deutsch, Du-Form, kurz und konkret. Zahlen mit deutschem Format (Komma).
 
 ## Offene Ideen

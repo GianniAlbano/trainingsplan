@@ -2,6 +2,10 @@
 
 Neueste Version oben. Die Version entspricht `VERSION` in `sw.js`.
 
+## 2026-10-26-2 · iPhone: unten nichts mehr abgeschnitten
+- Die App wird nicht mehr auf die volle Bildschirmhöhe gezogen, wenn iOS eine kleinere Höhe meldet; dadurch lag die Tab-Leiste teils unter dem Bildschirmrand. Die untere Grenze ist wieder die, die iOS meldet.
+- Fehlt der Abstand zur Statusleiste, rückt nur die oberste Zeile darunter (unabhängig von der Höhe).
+
 ## 2026-10-26-1 · Vollbild in der iPhone-Web-App
 - iOS 26 meldet Apps vom Home-Bildschirm teils eine zu kleine Höhe (2–3 cm Lücke unten) und keinen Abstand für die Statusleiste (Inhalt rutscht unter die unscharfe Statusleiste). Neu `fitScreen()`: misst Bildschirm und sichtbare Fläche und gleicht nur in diesem Fall aus (`--app-h`, `--app-top`, `--app-bot`). Im Browser, auf Android und am Computer ändert sich nichts.
 - Einstellungen → „Über die App“: Version und Anzeige-Werte (Modus, iOS-Version, Bildschirm, sichtbare Fläche, Abstände, Ausgleich) zur Fehlersuche.

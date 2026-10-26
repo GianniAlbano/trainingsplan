@@ -1,6 +1,6 @@
 # Trainingsplan-App – Entwicklerhandbuch
 
-Stand: 26.10.2026 · App-Version `2026-10-26-1`
+Stand: 26.10.2026 · App-Version `2026-10-26-2`
 
 Diese Datei ist der Einstieg für jeden Chat, der am Code arbeitet. Sie liegt im Repository; das Claude-Projekt „Marathon incoming“ verweist nur noch hierher.
 
@@ -107,7 +107,7 @@ Gesamturteil: „Auf Kurs“, „Achtung“ (1 rot oder ≥ 2 gelb), „Gegenste
 - Minimalistisch nach Giannis Vorlage: dunkler Schiefergrund, dünne Lato-Schrift, Großbuchstaben-Labels mit Laufweite, farbige Haarlinien statt Kästen und Schatten.
 - Handy: kein Scrollen der ganzen Seite; Inhalte passen auf den Bildschirm (sonst kompakter machen oder Nebensachen ausblenden). Fenster als Blätter von unten, nach unten wegwischbar.
 - Handy-Rahmen: `.app` liegt mit `position:fixed; inset:0` über dem ganzen Bildschirm. Die Statusleiste hält `.app` frei (`padding-top`), den Home-Balken nur die Tab-Leiste `.mtabs`. Diese Abstände nie zusätzlich auf `html`/`:root` legen, sonst werden sie doppelt gerechnet.
-- iPhone-Web-App: `fitScreen()` gleicht iOS-26-Fehler aus (zu kleine Höhe, fehlende Safe-Area-Werte) über die Variablen `--app-h`, `--app-top`, `--app-bot`. Statusleisten-Höhen je Bildschirmhöhe in `STATUSBAR`. Messwerte zeigt Einstellungen → „Über die App“.
+- iPhone-Web-App: `fitScreen()` rückt die oberste Zeile unter die Statusleiste, wenn iOS keinen Abstand meldet (`--app-top`, Höhen je Bildschirm in `STATUSBAR`), und hält unten Platz für den Home-Balken frei, wenn die App bis zum Rand reicht (`--app-bot`). Die Höhe der App nie über das hinaus ziehen, was iOS meldet (`--app-h` wird nicht mehr gesetzt) – sonst wird unten Text abgeschnitten. Messwerte zeigt Einstellungen → „Über die App“.
 - Texte auf Deutsch, Du-Form, kurz und konkret. Zahlen mit deutschem Format (Komma).
 
 ## Offene Ideen

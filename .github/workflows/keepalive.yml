@@ -17,12 +17,14 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Repository holen
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Supabase anpingen
         run: |
-          URL=$(grep -oE 'https://[a-z0-9]+\.supabase\.co' config.js | head -n1)
-          KEY=$(grep -oE 'sb_publishable_[A-Za-z0-9_-]+' config.js | head -n1)
+          # nur die Zeilen mit den echten Werten lesen, nicht die Beispiele in den Kommentaren
+          URL=$(grep -E '^[[:space:]]*supabaseUrl:' config.js | grep -oE 'https://[a-z0-9]+\.supabase\.co' | head -n1)
+          KEY=$(grep -E '^[[:space:]]*supabaseKey:' config.js | grep -oE 'sb_publishable_[A-Za-z0-9_-]+' | head -n1)
+          echo "Projekt: $URL"
           if [ -z "$URL" ] || [ -z "$KEY" ]; then
             echo "In config.js fehlen supabaseUrl oder supabaseKey."
             exit 1

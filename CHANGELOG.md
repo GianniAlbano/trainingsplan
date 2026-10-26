@@ -2,6 +2,10 @@
 
 Neueste Version oben. Die Version entspricht `VERSION` in `sw.js`.
 
+## 2026-10-26-3 · Handy-Anzeige zurück auf Stand 2026-10-24-1
+- `index.html` auf den Stand vor Pull Request #4 zurückgesetzt: Auf dem iPhone war unten Text abgeschnitten und oben lag der Inhalt unter der unscharfen Statusleiste. Der Ausgleich `fitScreen()` und die Anzeige „Über die App“ entfallen damit wieder.
+- Neue Versionsnummer, damit die installierte App die alte Anzeige sicher neu lädt.
+
 ## 2026-10-26-2 · iPhone: unten nichts mehr abgeschnitten
 - Die App wird nicht mehr auf die volle Bildschirmhöhe gezogen, wenn iOS eine kleinere Höhe meldet; dadurch lag die Tab-Leiste teils unter dem Bildschirmrand. Die untere Grenze ist wieder die, die iOS meldet.
 - Fehlt der Abstand zur Statusleiste, rückt nur die oberste Zeile darunter (unabhängig von der Höhe).

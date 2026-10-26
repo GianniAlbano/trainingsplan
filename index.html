@@ -1874,8 +1874,9 @@ $("mFab").onclick = quickLog;
 PHONE.addEventListener("change", () => { fitScreen(); render(); });
 
 /* ---------- Handy: Bildschirmrahmen in der iPhone-Web-App ----------
-   iOS 26 meldet einer App vom Home-Bildschirm teils eine zu kleine Höhe (Lücke unten)
-   und keinen Abstand für Statusleiste und Home-Balken. Dann messen wir selbst. */
+   iOS 26 meldet einer App vom Home-Bildschirm teils keinen Abstand für die Statusleiste.
+   Dann rücken wir nur die oberste Zeile darunter. Die Höhe nehmen wir, wie iOS sie meldet:
+   Aufziehen auf die volle Bildschirmhöhe hat unten Text abgeschnitten (2026-10-26-2). */
 const IOS = /iPhone|iPod/.test(navigator.userAgent);
 const STANDALONE = navigator.standalone === true || matchMedia("(display-mode: standalone)").matches;
 const iosVersion = () => { const m = /OS (\d+)_(\d+)(?:_(\d+))?/.exec(navigator.userAgent); return m ? m.slice(1).filter(Boolean).join(".") : ""; };
@@ -1899,13 +1900,10 @@ function fitScreen(){
   const portrait = innerHeight >= innerWidth;
   const full = portrait ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height);
   const gap = full - innerHeight;
-  // Lücke unten (2–3 cm): App auf die ganze Bildschirmhöhe ziehen
-  if (gap > 20 && gap < 240){ frame.h = full; root.style.setProperty("--app-h", full + "px"); }
-  const covers = frame.h || gap <= 20;
-  // Inhalt beginnt am oberen Bildschirmrand, iOS meldet aber keinen Abstand: Statusleiste selbst freihalten
-  if (portrait && covers && env.top < 1){ frame.top = STATUSBAR[full] || 47; root.style.setProperty("--app-top", frame.top + "px"); }
-  // Geräte mit Home-Balken (ab 812 pt Höhe): unten Platz lassen
-  if (portrait && covers && env.bottom < 1 && full >= 812){ frame.bot = 34; root.style.setProperty("--app-bot", frame.bot + "px"); }
+  // Inhalt beginnt am oberen Bildschirmrand, iOS meldet aber keinen Abstand: oberste Zeile unter die Statusleiste rücken
+  if (portrait && env.top < 1){ frame.top = STATUSBAR[full] || 47; root.style.setProperty("--app-top", frame.top + "px"); }
+  // Reicht die App bis ganz nach unten und iOS meldet keinen Abstand: Platz für den Home-Balken (ab 812 pt Höhe)
+  if (portrait && gap <= 20 && env.bottom < 1 && full >= 812){ frame.bot = 34; root.style.setProperty("--app-bot", frame.bot + "px"); }
   frame.active = !!(frame.h || frame.top || frame.bot);
 }
 let fitTimer = null;

@@ -2,11 +2,10 @@
 
 Neueste Version oben. Die Version entspricht `VERSION` in `sw.js`.
 
-## 2026-10-24-1 · Handy-Ansicht füllt den Bildschirm
-- Tab-Leiste sitzt jetzt ganz unten: Der Abstand für Statusleiste und Home-Balken wurde doppelt gerechnet (Überbleibsel aus der Claude-Version am Anfang des CSS). Er wird jetzt genau einmal freigehalten.
-- Die Handy-App liegt fest über dem ganzen Bildschirm (`position:fixed; inset:0`) und passt sich so jeder Bildschirmhöhe an.
-- Etwas größere Bedienelemente auf größeren Handys: Ringe auf „Heute“ wachsen mit der Bildschirmgröße (bis 150 px), Tab-Symbole und -Beschriftung leicht größer.
-- Webansicht unverändert.
+## 2026-10-24 · Wachhalter für Supabase
+- GitHub Action `.github/workflows/keepalive.yml` ruft alle 3 Tage die Datenbank-Funktion `keepalive()` auf, damit Supabase das kostenlose Projekt nicht pausiert. URL und Key liest sie aus `config.js`.
+- `supabase/keepalive.sql` (neu) legt die Funktion an; dieselbe Funktion steht jetzt auch am Ende von `supabase/schema.sql`.
+- Keine Änderung an der App, `VERSION` bleibt `2026-10-23-1`.
 
 ## 2026-10-24 · Dokumentation
 - `ENTWICKLUNG.md`, `CHANGELOG.md` und `README.md` ergänzt (keine Änderung an der App, `VERSION` bleibt `2026-10-23-1`).

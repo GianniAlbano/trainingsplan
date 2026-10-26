@@ -43,3 +43,15 @@ create policy "eigene Daten löschen" on public.docs for delete to authenticated
 -- Nur angemeldete Personen bekommen überhaupt Zugriff auf die Tabelle, Anonyme gar keinen.
 revoke all on public.docs from anon;
 grant select, insert, update, delete on public.docs to authenticated;
+
+-- Wachhalter: winzige Funktion für die GitHub Action "Supabase wach halten" (gibt nur 'ok' zurück, liest keine Daten).
+create or replace function public.keepalive()
+returns text
+language sql
+stable
+security invoker
+set search_path = ''
+as $$ select 'ok'::text $$;
+
+revoke all on function public.keepalive() from public;
+grant execute on function public.keepalive() to anon, authenticated;

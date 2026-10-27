@@ -1,6 +1,6 @@
 // Offline-Speicher der App. Bei jeder neuen Version VERSION erhöhen,
 // dann laden alle Geräte die neuen Dateien beim nächsten Öffnen.
-const VERSION = "2026-10-27-1";
+const VERSION = "2026-10-27-2";
 const CACHE = "trainingsplan-" + VERSION;
 const FILES = [
   "./", "index.html", "config.js", "manifest.webmanifest",

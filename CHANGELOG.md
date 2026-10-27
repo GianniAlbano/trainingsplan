@@ -2,6 +2,17 @@
 
 Neueste Version oben. Die Version entspricht `VERSION` in `sw.js`.
 
+## 2026-10-27-2 · Analyse mit Formzeit und Referenzdaten
+Enthält auch die Analyse-Grundlage, die als 2026-10-25-1 vorbereitet, aber nie auf `main` übernommen wurde. Alles läuft offline nach festen Regeln; Referenzwerte stehen als Konstante `REF` in `index.html`, Herleitung im Projekt-Dokument „Analyse – Referenzdaten“.
+- **Formzeit** (erste Seite im Tab „Analyse“, im Web oben im Halbjahr): die Marathonzeit, die zu Training und Wettkämpfen passt, mit Änderung gegenüber vor 4 Wochen und Wert laut Plan. Verlauf ab Planstart: gelaufen, gestrichelt laut Plan bis zum Rennen, Zielband. Darunter Sprung-Warnungen der nächsten 14 Tage (werden nie verrechnet) und Plantreue, Bereit (x von 5) und Puls-Fitness.
+- **Woher sie kommt:** Wochenumfang, Lauftage, Anteil locker und Qualitätseinheiten als Balken; der Strich zeigt, was für die Zielzeit typisch ist, darunter der Planwert und der größte Hebel.
+- **Prognose** als Spanne statt reiner Riegel-Prognose: Wettkampf ab 5 km per Riegel auf den Halbmarathon, × 2,19 (Vickers & Vertosick 2016), Umfangskorrektur (< 40 km/Woche +6 min, > 65 km/Woche −14 min), kombiniert mit dem Training. Auch im Formcheck und in der Rückmeldung nach einem Wettkampf.
+- **Bereitschaft:** Segmentleiste und Liste für längsten Lauf, Ø Wochenumfang, Ø Laufdistanz, Qualitätseinheiten und Tapering, mit Planwerten. Bis 8 Wochen vor dem Rennen „Noch Zeit“ statt rot.
+- **Sprünge:** Läufe mehr als 10 % über dem längsten Lauf der 30 Tage davor werden auf geplanten Karten markiert (▲), in der Analyse aufgelistet und nach dem Eintragen angemerkt (Garmin-RUNSAFE 2025).
+- **Fitness aus dem Puls:** Meter pro Herzschlag bei lockeren Läufen, Verlauf über 16 Wochen.
+- **Renneinteilung:** Wettkämpfe haben ein Feld „Halbzeit“ (`actual.half`); Vergleich beider Hälften mit 873.000 Berlin-Finishern.
+- Ausgefallene Einheiten zählen in keiner Analyse mit.
+
 ## 2026-10-27-1 · Neue Heute-Seite, Ausfall, Plan anpassen
 - Handy (installierte App): Unter der Statusleiste bleibt oben ein leerer Streifen (mind. 50 px + 12 px), damit keine Schrift unter der unscharfen Leiste liegt. Im Browser unverändert.
 - „Heute“: Die Karten „Heute“ und „Als Nächstes“ entfallen. Neu ist „Weg zum <Rennen>“: Wochenkilometer vom Planstart bis zum Renntag (geplant nach Phase gefärbt, gelaufen in Akzentfarbe), Markierung „Heute“, Phasenband Grundlage/Marathonplan/Tapering, nächster Zwischenwettkampf und Bilanz (gelaufen gesamt, längster Lauf, Wochen in Folge im Plan).

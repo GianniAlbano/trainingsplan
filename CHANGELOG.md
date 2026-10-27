@@ -2,6 +2,11 @@
 
 Neueste Version oben. Die Version entspricht `VERSION` in `sw.js`.
 
+## 2026-10-27-3 · Analyse ohne Scrollen
+- Handy, Tab „Analyse“: Jede Seite passt jetzt ohne Scrollen auf den Bildschirm, auch auf kleinen Handys und in der installierten App. Passt eine Seite nicht, wird sie erst dichter gesetzt, dann werden Nebensachen ausgeblendet (Hinweistexte, Legenden, Erklärungen bei grünen Punkten, weitere Sprung-Warnungen). Hauptzahlen, Diagramme und Warnungen bleiben immer sichtbar; Diagramme werden erst als letzter Schritt etwas flacher. Neu berechnet beim Drehen oder Ändern der Fenstergröße.
+- Die Halbjahres-Zahlen (Gelaufen, Einheiten, Ø Pace) stehen jetzt auf der Seite „Wochenkilometer“ statt über allen Seiten. Das gibt jeder Analyse-Seite rund 60 px mehr Platz.
+- Webansicht unverändert.
+
 ## 2026-10-27-2 · Analyse mit Formzeit und Referenzdaten
 Enthält auch die Analyse-Grundlage, die als 2026-10-25-1 vorbereitet, aber nie auf `main` übernommen wurde. Alles läuft offline nach festen Regeln; Referenzwerte stehen als Konstante `REF` in `index.html`, Herleitung im Projekt-Dokument „Analyse – Referenzdaten“.
 - **Formzeit** (erste Seite im Tab „Analyse“, im Web oben im Halbjahr): die Marathonzeit, die zu Training und Wettkämpfen passt, mit Änderung gegenüber vor 4 Wochen und Wert laut Plan. Verlauf ab Planstart: gelaufen, gestrichelt laut Plan bis zum Rennen, Zielband. Darunter Sprung-Warnungen der nächsten 14 Tage (werden nie verrechnet) und Plantreue, Bereit (x von 5) und Puls-Fitness.

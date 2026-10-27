@@ -2,6 +2,12 @@
 
 Neueste Version oben. Die Version entspricht `VERSION` in `sw.js`.
 
+## 2026-10-27-1 · Neue Heute-Seite, Ausfall, Plan anpassen
+- Handy (installierte App): Unter der Statusleiste bleibt oben ein leerer Streifen (mind. 50 px + 12 px), damit keine Schrift unter der unscharfen Leiste liegt. Im Browser unverändert.
+- „Heute“: Die Karten „Heute“ und „Als Nächstes“ entfallen. Neu ist „Weg zum <Rennen>“: Wochenkilometer vom Planstart bis zum Renntag (geplant nach Phase gefärbt, gelaufen in Akzentfarbe), Markierung „Heute“, Phasenband Grundlage/Marathonplan/Tapering, nächster Zwischenwettkampf und Bilanz (gelaufen gesamt, längster Lauf, Wochen in Folge im Plan).
+- Ausfall eintragen (Einheit → „Fällt aus …“, Einstellungen oder Hinweis „Einheiten offen“ → „Ausfall“): Einheiten im Zeitraum werden als ausgefallen markiert (`skipped`), zählen nicht als verpasst und nicht in Plan-km/Formcheck. Optional sanfter Wiedereinstieg: so viele Tage wie der Ausfall (3–14) nur locker, Intervalle/Tempo werden lockere Läufe, Umfang 70 % dann 85 %. Original bleibt in `adj.orig` und lässt sich je Einheit wiederherstellen.
+- Plan anpassen (Einstellungen bzw. Knopf unter der Wochenansicht): für einen Zeitraum Einheiten hinzufügen (jede Woche an einem Wochentag), entfernen, Art ändern, Umfang ändern oder auf einen anderen Wochentag verschieben. Vorschau vor dem Anwenden, letzte Sammeländerung rückgängig machbar. Erledigte und ausgefallene Einheiten bleiben unverändert.
+
 ## 2026-10-26-3 · Handy-Anzeige zurück auf Stand 2026-10-24-1
 - `index.html` auf den Stand vor Pull Request #4 zurückgesetzt: Auf dem iPhone war unten Text abgeschnitten und oben lag der Inhalt unter der unscharfen Statusleiste. Der Ausgleich `fitScreen()` und die Anzeige „Über die App“ entfallen damit wieder.
 - Neue Versionsnummer, damit die installierte App die alte Anzeige sicher neu lädt.

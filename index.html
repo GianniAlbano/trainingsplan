@@ -12,6 +12,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
+<script>try{if(navigator.standalone||matchMedia("(display-mode: standalone)").matches)document.documentElement.classList.add("standalone")}catch(e){}</script>
 <style>
 @font-face{font-family:"Lato";font-weight:300;font-style:normal;font-display:swap;src:url(fonts/lato-300.woff2) format("woff2")}
 @font-face{font-family:"Lato";font-weight:400;font-style:normal;font-display:swap;src:url(fonts/lato-400.woff2) format("woff2")}
@@ -193,6 +194,11 @@ h1{font-family:var(--f-display);font-weight:300;font-size:clamp(30px,5vw,40px);l
 .res{display:flex;flex-wrap:wrap;gap:2px 10px;font-size:12px;color:var(--ok);font-weight:400;border-top:1px solid var(--line-soft);padding-top:6px;margin-top:3px}
 .res span{white-space:nowrap}
 .card.rest{border-style:dashed;background:none}
+.card.skipped{border-style:dashed;opacity:.55}
+.card.skipped::before{background:var(--muted)}
+.card.skipped .title,.card.skipped .kv{text-decoration:line-through;text-decoration-color:var(--muted)}
+.res.off{color:var(--muted)}
+.adjtag{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--bib)}
 .card.rest .chip{color:var(--muted)}
 .add{border:0;background:transparent;border-radius:0;padding:6px 0;font-size:10.5px;color:var(--muted);font-weight:700;letter-spacing:.14em;text-transform:uppercase;text-align:left}
 .add:hover{color:var(--accent)}
@@ -376,6 +382,9 @@ body.dragging{-webkit-user-select:none;user-select:none}
 .moredet[open] summary::before{content:"– "}
 .moreinner{display:grid;gap:12px;margin-top:12px}
 .linkbtn.danger{color:var(--warn)}
+.sinfo{display:flex;justify-content:space-between;align-items:baseline;gap:6px 14px;flex-wrap:wrap;font-size:13px;color:var(--muted);border-left:2px solid var(--line);padding:2px 0 2px 12px}
+.sinfo.off{border-left-color:var(--muted)}
+.sinfo.adj{border-left-color:var(--bib)}
 .linkbtn.armed{font-weight:700}
 .nonrun .runonly{display:none!important}
 /* Handy: Eintragen-Fenster passt ohne Scrollen auf den Bildschirm */
@@ -432,6 +441,15 @@ body.dragging .wpill:not(.drop){border-color:var(--line)}
 .lprev u{position:absolute;left:10px;right:10px;bottom:12px;height:2px;border-radius:2px}
 .lname{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .look[aria-pressed="true"] .lname{color:var(--accent)}
+.plist{list-style:none;margin:0;padding:0;display:grid;max-height:30dvh;overflow-y:auto;border-top:1px solid var(--line-soft)}
+.plist li{display:grid;grid-template-columns:74px minmax(0,1fr) auto;gap:10px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--line-soft);font-size:13px}
+.plist span{color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.plist b{font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plist em{font-style:normal;color:var(--bib);font-size:12px;white-space:nowrap}
+.plist em.x{color:var(--warn)}
+.plist li.more{display:block;color:var(--muted)}
+#toolBody .feel button{font-size:11.5px}
+#toolBody .linkbtn{justify-self:start}
 .msect{font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--bib);margin:6px 0 -6px}
 
 /* =====================================================================
@@ -447,7 +465,11 @@ body.dragging .wpill:not(.drop){border-color:var(--line)}
     padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
   .quick{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
   .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+  /* Installierte App (Home-Bildschirm): unter der Statusleiste bleibt ein leerer Streifen,
+     damit keine Schrift unter der unscharfen Leiste liegt. Mindestens --top-gap, auch wenn iOS keinen Abstand meldet. */
+  :root.standalone .app{padding-top:calc(max(env(safe-area-inset-top,0px), var(--top-gap)) + 12px)}
 }
+:root{--top-gap:50px}
 .mhead{display:grid;grid-template-columns:40px 1fr 40px;align-items:center;padding:10px 0 12px;border-bottom:2px solid var(--accent);gap:4px}
 .mtop{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
 .mbrand{font-size:10px;font-weight:700;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;display:flex;gap:8px;align-items:center}
@@ -488,12 +510,6 @@ body.dragging .wpill:not(.drop){border-color:var(--line)}
 .mring .val{font-weight:300;font-size:15px}
 .mring .val small{color:var(--muted);font-size:11px}
 .mfit{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:8px;touch-action:pan-x}
-.mfit .card .open{padding:9px 44px 10px 12px;gap:3px}
-.mfit .card .title{font-size:15px}
-.mfit .check{top:8px;right:8px}
-.mnext{display:flex;flex-direction:column;gap:8px;margin-top:4px}
-.mmore{align-self:flex-start}
-.mempty.compact{padding:10px 14px;display:flex;justify-content:space-between;align-items:center;text-align:left}
 .mrings .count,.mring svg{transition:width .2s,height .2s}
 .mbody.tight{gap:10px;padding-top:10px}
 .mbody.tight .mrings .count,.mbody.tight .mring svg{width:min(100px,27vw);height:min(100px,27vw)}
@@ -501,6 +517,25 @@ body.dragging .wpill:not(.drop){border-color:var(--line)}
 .mbody.tight .mrings .count .lbl{font-size:8.5px}
 .mnotice{display:flex;justify-content:space-between;align-items:center;gap:10px;border-left:2px solid var(--warn);padding:4px 0 4px 12px;font-size:13px;color:var(--muted)}
 .mnotice.ex{border-left-color:var(--bib)}
+.mnotice .acts{display:flex;gap:14px;flex:none}
+/* Heute: Weg zum Rennen */
+.mpath{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line-soft);padding-top:12px}
+.mpchart{flex:1;min-height:64px;position:relative}
+.mpchart svg{position:absolute;inset:0;width:100%;height:100%;display:block;overflow:visible}
+.mpmark{position:absolute;top:0;bottom:0;width:0;border-left:1px dashed var(--bib);pointer-events:none}
+.mpmark span{position:absolute;top:-2px;left:5px;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--bib);white-space:nowrap}
+.mpmark.flip span{left:auto;right:5px}
+.mpphase{display:flex;height:3px;border-radius:2px;overflow:hidden;gap:2px}
+.mpphase i{background:var(--tc)}
+.mpleg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:10px;color:var(--muted);letter-spacing:.06em}
+.mpleg span{display:inline-flex;align-items:center;gap:6px}
+.mpleg i{width:7px;height:7px;border-radius:50%;background:var(--tc)}
+.mpleg .r{margin-left:auto}
+.mpath .mstats{border-top:0;padding-top:4px}
+.mpath .mstats b{font-size:22px}
+.mgoal{display:flex;justify-content:space-between;align-items:baseline;gap:10px;border-left:2px solid var(--t-race);padding:3px 0 3px 12px;font-size:13px}
+.mgoal span{color:var(--muted);font-size:12px;white-space:nowrap}
+.mbody.tight .mpath .mstats b{font-size:19px}
 
 /* Woche */
 .wstrip{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
@@ -511,6 +546,7 @@ body.dragging .wpill:not(.drop){border-color:var(--line)}
 .wpill .dots i{width:5px;height:5px;border-radius:50%;border:1px solid var(--tc)}
 .wpill .dots i.done{background:var(--tc)}
 .wpill .dots i.missed{border-color:var(--warn)}
+.wpill .dots i.skipped,.mcal button .dots i.skipped{border-style:dashed;border-color:var(--muted);opacity:.6}
 .wpill.today .wd{color:var(--accent)}
 .wpill.sel{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,transparent)}
 .wpill.drop{border-color:var(--bib);background:color-mix(in srgb,var(--bib) 14%,transparent);transform:scale(1.06)}
@@ -689,6 +725,7 @@ body.locked{overflow:hidden}
 </div>
 
 <dialog id="moreDlg"><div class="dlg" id="moreBody"></div></dialog>
+<dialog id="toolDlg"><div class="dlg" id="toolBody"></div></dialog>
 
 <div class="quick" id="quick" role="region" aria-label="Schnellbewertung" hidden></div>
 <div class="fbcard" id="fbCard" role="status" hidden></div>
@@ -710,6 +747,7 @@ body.locked{overflow:hidden}
       <p class="pvdesc" id="pvDesc"></p>
       <button type="button" class="linkbtn" id="editPlan">Plan bearbeiten</button>
     </div>
+    <div class="sinfo" id="sInfo" hidden></div>
     <fieldset id="planEdit">
       <div class="row">
         <label>Datum<input type="date" id="f_date" required></label>
@@ -1059,15 +1097,17 @@ function renderSyncBadge(){
 /* ---------- Ableitungen ---------- */
 const list = () => [...state.sessions.values()];
 const inRange = (a,b) => list().filter(s => s.date >= a && s.date <= b);
+const isSkipped = s => !!(s.skipped && !s.actual);
 function status(s){
   if (s.actual) return "done";
+  if (s.skipped) return "skipped";
   if (s.type === "rest") return "rest";
   return s.date < iso(today()) ? "missed" : "planned";
 }
 function totals(arr){
   let planKm=0, doneKm=0, planCount=0, doneCount=0, sec=0, runSec=0, runKm=0, rpeSum=0, rpeN=0, longest=0;
   arr.forEach(s => {
-    if (s.type==="rest") return;
+    if (s.type==="rest" || isSkipped(s)) return;
     planKm += +s.planKm||0; planCount++;
     if (s.actual){ doneCount++; doneKm += +s.actual.km||0; sec += +s.actual.sec||0;
       if (s.actual.km && s.actual.sec){ runKm += +s.actual.km; runSec += +s.actual.sec; }
@@ -1146,17 +1186,17 @@ function cardHtml(s){
   const plan = [s.planKm?`<span>${fmtKm(s.planKm)} km</span>`:"", pm?`<span>${zoned?"~":""}${pm} min</span>`:"",
     pp && !NONRUN.has(s.type)?`<span class="pace">${fmtPaceSec(pp)} /km</span>`:"",
     zoned?`<span class="zone" style="--tc:var(--t-${ZONES[s.planZone].tc})">${ZONES[s.planZone].short}</span>`:""].join("");
-  const a = s.actual;
-  const res = a ? [a.km?`<span>${fmtKm(a.km)} km</span>`:"", a.sec?`<span>${NONRUN.has(s.type) ? fmtMin(a.sec) : fmtTime(a.sec)}</span>`:"", a.km&&a.sec?`<span>${fmtPace(a.sec,a.km)}</span>`:"", a.hr?`<span>♥ ${a.hr}</span>`:"", a.feel?`<span>${FEELS[a.feel-1]}</span>`:""].join("") : "";
-  const check = st==="rest" ? "" : st==="done"
+  const a = s.actual, skip = st === "skipped";
+  const res = skip ? `<span>Ausgefallen${s.skipped.reason && PAUSE_REASONS[s.skipped.reason] ? " · " + PAUSE_REASONS[s.skipped.reason] : ""}</span>` : a ? [a.km?`<span>${fmtKm(a.km)} km</span>`:"", a.sec?`<span>${NONRUN.has(s.type) ? fmtMin(a.sec) : fmtTime(a.sec)}</span>`:"", a.km&&a.sec?`<span>${fmtPace(a.sec,a.km)}</span>`:"", a.hr?`<span>♥ ${a.hr}</span>`:"", a.feel?`<span>${FEELS[a.feel-1]}</span>`:""].join("") : "";
+  const check = st==="rest" || skip ? "" : st==="done"
     ? `<span class="check done" title="Absolviert" aria-label="Absolviert">${CHECK_SVG}</span>`
     : `<button class="check ${st==="missed"?"missed":""}" data-check="${esc(s.id)}" title="Wie geplant erledigt" aria-label="${esc(TYPES[s.type]?.label)} wie geplant erledigt">${CHECK_SVG}</button>`;
-  return `<div class="card ${s.type==="rest"?"rest":""}" style="--tc:${tc}" data-id="${esc(s.id)}"${FINE ? ' draggable="true"' : ""}>
+  return `<div class="card ${s.type==="rest"?"rest":""} ${skip?"skipped":""}" style="--tc:${tc}" data-id="${esc(s.id)}"${FINE ? ' draggable="true"' : ""}>
     <button class="open" data-open="${esc(s.id)}">
-      <span class="tt"><span class="chip">${esc(TYPES[s.type]?.label||"Training")}</span></span>
+      <span class="tt"><span class="chip">${esc(TYPES[s.type]?.label||"Training")}</span>${s.adj && !a ? `<span class="adjtag">angepasst</span>` : ""}</span>
       ${s.title?`<span class="title">${esc(s.title)}</span>`:""}
       ${plan?`<span class="kv num">${plan}</span>`:""}
-      ${res?`<span class="res num">${res}</span>`:""}
+      ${res?`<span class="res num${skip?" off":""}">${res}</span>`:""}
     </button>${check}
   </div>`;
 }
@@ -1176,11 +1216,12 @@ function renderWeek(){
       <div class="cards">${items.map(cardHtml).join("")}</div>
       <button class="add" data-add="${ds}">+ Einheit</button></div>`;
   }
-  html += `</div><div class="weekfoot"><span class="note touchhint">Einheit gedrückt halten und auf einen anderen Tag ziehen, um sie zu verschieben.</span><button class="btn sm" id="copyWeek">Woche in nächste Woche kopieren</button></div>`;
+  html += `</div><div class="weekfoot"><span class="note touchhint">Einheit gedrückt halten und auf einen anderen Tag ziehen, um sie zu verschieben.</span><button class="btn sm" id="planTool">Plan anpassen</button><button class="btn sm" id="copyWeek">Woche in nächste Woche kopieren</button></div>`;
   $("view").innerHTML = html;
   bindCards();
   document.querySelectorAll("[data-add]").forEach(b => b.onclick = () => openSession(null, b.dataset.add));
   $("copyWeek").onclick = copyWeek;
+  $("planTool").onclick = openPlanTool;
   document.querySelectorAll(".day").forEach(day => {
     day.ondragover = e => { e.preventDefault(); day.classList.add("drop"); };
     day.ondragleave = () => day.classList.remove("drop");
@@ -1272,7 +1313,7 @@ async function copyWeekFrom(start){
   const arr = inRange(iso(start), iso(addDays(start,6)));
   for (const s of arr){
     const {id, actual, ...body} = s;
-    body.date = iso(addDays(parse(s.date),7)); body.example = false; body.actual = null;
+    body.date = iso(addDays(parse(s.date),7)); body.example = false; body.actual = null; body.skipped = null; body.adj = null;
     try{ await store.save(newId(), body); }catch(e){}
   }
   return arr.length;
@@ -1291,7 +1332,7 @@ async function quickDone(id){
   const s = state.sessions.get(id); if (!s) return;
   const km = s.planKm || null, pm = planMinutes(s);
   const sec = pm ? pm*60 : (km && planPace(s) ? Math.round(km*planPace(s)) : null);
-  const body = {...strip(s), example:false, actual:{km, sec, hr:null, rpe:null, feel:null, notes:"", loggedAt:new Date().toISOString()}};
+  const body = {...strip(s), example:false, skipped:null, actual:{km, sec, hr:null, rpe:null, feel:null, notes:"", loggedAt:new Date().toISOString()}};
   try { await store.save(id, body); showQuick(id); }
   catch(e){ toast("Eintragen hat nicht geklappt. Prüfe deine Verbindung."); }
 }
@@ -1566,6 +1607,7 @@ function openSession(id, date, logNow){
   // Bestehende Einheit: Plan als kurze Zusammenfassung, Bearbeiten auf Wunsch
   if (s){ $("pvKv").innerHTML = planSummary(s); $("pvDesc").textContent = s.desc || ""; }
   showPlanEdit(!s);
+  renderSessionInfo(s);
   const a = s?.actual;
   $("f_done").checked = !!a || !!logNow;
   $("logFields").hidden = !$("f_done").checked; $("form").classList.toggle("logging", $("f_done").checked);
@@ -1591,6 +1633,26 @@ $("delBtn").onclick = async () => {
   try { await store.remove(editing); $("dlg").close(); toast("Einheit gelöscht"); } catch(e){ showErr("Löschen hat nicht geklappt. Prüfe deine Verbindung und versuche es noch einmal."); }
 };
 function showErr(m){ $("formErr").textContent = m; $("formErr").hidden = false; }
+// Ausfall und Anpassung nach Ausfall: Hinweis im Dialog, mit Rücknahme
+function renderSessionInfo(s){
+  const box = $("sInfo");
+  if (!s || s.actual || s.type === "rest"){ box.hidden = true; box.innerHTML = ""; return; }
+  box.hidden = false;
+  if (s.skipped){
+    box.className = "sinfo off";
+    box.innerHTML = `<span>Ausgefallen${PAUSE_REASONS[s.skipped.reason] ? " · " + PAUSE_REASONS[s.skipped.reason] : ""}. Zählt nicht als verpasst.</span><button type="button" class="linkbtn" id="sUnskip">Findet doch statt</button>`;
+    $("sUnskip").onclick = async () => { await store.save(editing, {...strip(s), skipped:null}); $("dlg").close(); toast("Einheit wieder eingeplant"); };
+  } else if (s.adj){
+    const o = s.adj.orig || {};
+    box.className = "sinfo adj";
+    box.innerHTML = `<span>Nach Ausfall angepasst. Ursprünglich: ${esc(o.title || TYPES[o.type]?.label || "Einheit")}${o.planKm ? ", " + fmtKm(o.planKm) + " km" : ""}.</span><button type="button" class="linkbtn" id="sRestore">Original wiederherstellen</button>`;
+    $("sRestore").onclick = async () => { await store.save(editing, {...strip(s), ...o, adj:null}); $("dlg").close(); toast("Ursprüngliche Einheit wiederhergestellt"); };
+  } else {
+    box.className = "sinfo";
+    box.innerHTML = `<span>Kannst du nicht trainieren?</span><button type="button" class="linkbtn" id="sSkip">Fällt aus …</button>`;
+    $("sSkip").onclick = () => { $("dlg").close(); openPause(s.date, s.date); };
+  }
+}
 $("form").onsubmit = async e => {
   e.preventDefault();
   const date = $("f_date").value; if (!date){ showPlanEdit(true); showErr("Bitte ein Datum wählen."); return; }
@@ -1605,7 +1667,8 @@ $("form").onsubmit = async e => {
     planKm: nr || $("f_planKm").value === "" ? null : kmv("f_planKm"),
     planMin: $("f_planMin").value === "" ? null : +$("f_planMin").value,
     planZone: zone, planPace: nr || zone ? null : (pSec || null),
-    desc: $("f_desc").value.trim(), example: false, created: prev?.created || Date.now()
+    desc: $("f_desc").value.trim(), example: false, created: prev?.created || Date.now(),
+    skipped: $("f_done").checked ? null : (prev?.skipped || null), adj: prev?.adj || null
   };
   if ($("f_done").checked){
     const t = $("f_time").value.trim(), sec = nr ? parseDur(t) : parseTime(t);
@@ -1624,7 +1687,7 @@ $("form").onsubmit = async e => {
 
 function quickLog(){
   const t = iso(today());
-  const open = list().filter(s => !s.actual && s.type!=="rest" && s.date<=t).sort(byDate);
+  const open = list().filter(s => !s.actual && !s.skipped && s.type!=="rest" && s.date<=t).sort(byDate);
   const todays = open.filter(s => s.date===t);
   const pick = todays[0] || open.filter(s => s.date >= iso(addDays(today(),-3))).pop();
   if (pick) openSession(pick.id, null, true); else openSession(null, t, true);
@@ -1713,23 +1776,18 @@ function mToday(){
       : days === 0 ? `<div class="count"><span class="big">Heute</span><span class="lbl">Renntag</span></div>`
       : `<div class="count"><span class="big num">${-days}</span><span class="lbl">Tage seit dem Rennen</span></div>`;
   } else count = `<div class="count"><span class="lbl">Countdown</span><button class="btn ghost sm" id="mRace">Renndatum eintragen</button></div>`;
-  const todays = list().filter(s => s.date===ts).sort(byDate);
-  const next = list().filter(s => s.date > ts && s.type!=="rest").sort(byDate)[0];
   const missed = list().filter(s => status(s)==="missed" && s.date >= iso(addDays(t,-7))).sort(byDate);
-  const ex = list().some(s => s.example);
   $("mBody").innerHTML = `
     <div class="mrings">${count}
       <div class="mring">${ringSvg(pct)}<span class="lbl">Diese Woche</span><span class="val num">${fmtKm(wt.doneKm)} <small>/ ${fmtKm(wt.planKm)} km</small></span></div></div>
     <div class="mfit" id="mFit">
       ${(() => { const f = formcheck(); return f.verdict.level === "na" ? "" : `<button class="mfc fc-${f.verdict.level} fitdrop" id="mFc"><b>${f.verdict.label}</b><span>${f.checks.filter(c => c.level !== "ok").map(c => c.title).join(" · ") || "Alle Ziele im grünen Bereich"}</span></button>`; })()}
-      ${missed.length ? `<div class="mnotice fitdrop"><span>${missed.length===1 ? "1 Einheit" : missed.length+" Einheiten"} der letzten Tage offen</span><button class="mlink" data-goto="${missed[0].date}">Ansehen</button></div>` : ""}
-      <div class="mlbl">Heute <span>${WD_L[(t.getDay()+6)%7]}</span></div>
-      ${todays.length ? cardHtml(todays[0]) + (todays.length > 1 ? `<button class="mlink mmore" data-goto="${ts}">+ ${todays.length-1} weitere heute</button>` : "")
-        : `<div class="mempty compact">Heute ist nichts geplant.<button class="btn sm" data-add="${ts}">+ Einheit</button></div>`}
-      ${next ? `<div class="mnext fitdrop"><div class="mlbl">Als Nächstes <span>${WD_L[(parse(next.date).getDay()+6)%7]}, ${fmtDM(parse(next.date))}</span></div>${cardHtml(next)}</div>` : ""}
+      ${missed.length ? `<div class="mnotice fitdrop"><span>${missed.length===1 ? "1 Einheit" : missed.length+" Einheiten"} der letzten Tage offen</span><span class="acts"><button class="mlink" id="mMissedSick" data-from="${missed[0].date}">Ausfall</button><button class="mlink" data-goto="${missed[0].date}">Ansehen</button></span></div>` : ""}
+      ${pathHtml()}
     </div>`;
   if ($("mRace")) $("mRace").onclick = openRace;
   if ($("mFc")) $("mFc").onclick = () => { M.tab = "half"; M.slide = 0; M.half = today(); render(); };
+  if ($("mMissedSick")) $("mMissedSick").onclick = () => openPause($("mMissedSick").dataset.from, iso(addDays(t,-1)));
   // Alles muss ohne Scrollen passen: erst kleinere Ringe, dann Nebensachen ausblenden
   requestAnimationFrame(() => {
     const fit = $("mFit"); if (!fit) return;
@@ -1739,6 +1797,59 @@ function mToday(){
     while (over() && drops.length) drops.shift().hidden = true;
   });
 }
+
+/* Heute: der ganze Weg bis zum Rennen – Wochenkilometer, Phasen, Bilanz */
+function pathWeeks(){
+  const all = list().filter(s => s.type !== "rest"); if (!all.length) return null;
+  const st = state.settings || {}, first = all.reduce((a, s) => s.date < a ? s.date : a, all[0].date);
+  const lastDate = st.raceDate || all.reduce((a, s) => s.date > a ? s.date : a, all[0].date);
+  const start = sow(parse(first)), end = sow(parse(lastDate)), race = st.raceDate ? parse(st.raceDate) : null;
+  const weeks = [];
+  for (let d = start; d <= end && weeks.length < 104; d = addDays(d, 7)){
+    const tt = totals(inRange(iso(d), iso(addDays(d, 6))));
+    const toRace = race ? Math.floor((race - d) / (7*864e5)) : 99;
+    weeks.push({ start:d, plan:tt.planKm, done:tt.doneKm, phase: toRace <= 3 ? "taper" : toRace <= 18 ? "build" : "base" });
+  }
+  return weeks;
+}
+const PHASES = { base:{label:"Grundlage", tc:"easy"}, build:{label:"Marathonplan", tc:"long"}, taper:{label:"Tapering", tc:"tempo"} };
+function pathHtml(){
+  const weeks = pathWeeks(); if (!weeks || weeks.length < 2) return "";
+  const st = state.settings || {}, cur = iso(sow(today())), ci = weeks.findIndex(w => iso(w.start) === cur);
+  const maxV = Math.max(10, ...weeks.map(w => Math.max(w.plan, w.done)));
+  const n = weeks.length, W = n * 10, H = 100, bw = 6;
+  let bars = "";
+  weeks.forEach((w, i) => {
+    const x = i*10 + 2, past = iso(w.start) < cur, isCur = i === ci;
+    const hp = w.plan / maxV * H, hd = Math.min(w.done, maxV) / maxV * H;
+    if (hp) bars += `<rect x="${x}" y="${H-hp}" width="${bw}" height="${hp}" rx="1.5" fill="var(--t-${PHASES[w.phase].tc})" fill-opacity="${past || isCur ? .16 : .3}"/>`;
+    if (hd) bars += `<rect x="${x}" y="${H-hd}" width="${bw}" height="${hd}" rx="1.5" fill="${isCur ? "var(--bib)" : "var(--accent)"}"/>`;
+  });
+  // Phasen als Band unter den Balken
+  const segs = []; weeks.forEach(w => { const l = segs[segs.length-1]; if (l && l.p === w.phase) l.n++; else segs.push({ p:w.phase, n:1 }); });
+  const used = [...new Set(segs.map(s => s.p))];
+  // Bilanz
+  const doneAll = list().filter(s => s.actual && RUN(s));
+  const kmAll = doneAll.reduce((a, s) => a + (+s.actual.km || 0), 0), longest = Math.max(0, ...doneAll.map(s => +s.actual.km || 0));
+  let streak = 0;
+  for (let i = (ci >= 0 ? ci : weeks.length) - 1; i >= 0; i--){ const w = weeks[i]; if (!w.plan) continue; if (w.done >= w.plan * GOALS.planMin) streak++; else break; }
+  const goal = list().filter(s => s.type === "race" && s.date >= iso(today()) && s.date !== st.raceDate).sort(byDate)[0];
+  const goalDays = goal ? Math.round((parse(goal.date) - today()) / 864e5) : 0;
+  const wk = ci >= 0 ? `Woche ${ci+1} von ${n}` : iso(weeks[0].start) > cur ? `Start in ${Math.ceil((weeks[0].start - today())/864e5)} Tagen` : `${n} Wochen`;
+  return `<section class="mpath">
+      <div class="mlbl">Weg zum ${esc(st.raceName || "Rennen")} <span>${wk}</span></div>
+      <div class="mpchart" id="mPath"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Wochenkilometer vom Planstart bis zum Rennen">${bars}</svg>${ci >= 0 ? `<div class="mpmark${(ci*10+5)/(n*10) > .75 ? " flip" : ""}" style="left:${((ci*10+5)/(n*10)*100).toFixed(2)}%"><span>Heute</span></div>` : ""}</div>
+      <div class="mpphase">${segs.map(s => `<i style="flex:${s.n};--tc:var(--t-${PHASES[s.p].tc})"></i>`).join("")}</div>
+      <div class="mpleg">${used.map(p => `<span style="--tc:var(--t-${PHASES[p].tc})"><i></i>${PHASES[p].label}</span>`).join("")}<span class="r" style="--tc:var(--accent)"><i></i>gelaufen</span></div>
+      ${goal ? `<div class="mgoal fitdrop">${esc(goal.title || "Wettkampf")}<span>${fmtDM(parse(goal.date))} · noch ${goalDays} ${goalDays === 1 ? "Tag" : "Tage"}</span></div>` : ""}
+      <div class="mstats three">
+        <div><b class="num">${fmtKm(kmAll)}<small>km</small></b><span>Gelaufen</span></div>
+        <div><b class="num">${fmtKm(longest)}<small>km</small></b><span>Längster Lauf</span></div>
+        <div><b class="num">${streak}<small>${streak === 1 ? "Woche" : "Wochen"}</small></b><span>Plan in Folge</span></div>
+      </div>
+    </section>`;
+}
+
 
 function mWeek(){
   const d = M.day, s0 = sow(d), e0 = addDays(s0,6), ds = iso(d), ts = iso(today());
@@ -1979,6 +2090,8 @@ function renderMore(){
   const st = state.settings || {}, ex = list().filter(s => s.example).length, s0 = sow(M.day), note = storeNoteText();
   $("moreBody").innerHTML = `${grab}<h3>Einstellungen</h3><div>
     <button class="mrow" data-m="race">Wettkampf &amp; Ziele<small>${st.raceDate ? esc(st.raceName||"Wettkampf")+" · "+parse(st.raceDate).toLocaleDateString("de-DE")+(st.goal ? " · Ziel "+esc(st.goal) : "") : "Noch nicht festgelegt"}</small></button>
+    <button class="mrow" data-m="plan">Plan anpassen<small>Einheiten für einen Zeitraum hinzufügen, entfernen, ändern oder verschieben</small></button>
+    <button class="mrow" data-m="pause">Ausfall eintragen<small>Krank oder verletzt: Einheiten absagen, Wiedereinstieg planen</small></button>
     <button class="mrow" data-m="design">Design<small>Layout und Farben der Trainingsarten</small></button>
     <button class="mrow" data-m="export">Excel-Export<small>Alle absolvierten Einheiten als .xlsx</small></button>
     <button class="mrow" data-m="data">Daten sichern &amp; importieren<small>Sicherungsdatei erstellen oder einspielen</small></button>
@@ -1993,6 +2106,8 @@ function renderMore(){
     const k = b.dataset.m;
     if (k==="race"){ $("moreDlg").close(); openRace(); }
     else if (k==="design"){ moreView = "design"; renderMore(); }
+    else if (k==="plan"){ $("moreDlg").close(); openPlanTool(); }
+    else if (k==="pause"){ $("moreDlg").close(); openPause(); }
     else if (k==="data"){ moreView = "data"; renderMore(); }
     else if (k==="account"){ moreView = "account"; renderMore(); }
     else if (k==="export"){ $("moreDlg").close(); exportExcel(); }
@@ -2008,6 +2123,187 @@ function renderMore(){
       moreArm = null; $("moreDlg").close(); await clearExamples();
     }
   });
+}
+
+/* =====================================================================
+   Ausfall (krank, verletzt …) und Plan anpassen
+   Beide arbeiten direkt auf den gespeicherten Einheiten und lassen sich rückgängig machen.
+   ===================================================================== */
+const PAUSE_REASONS = { sick:"Krank", injury:"Verletzt", other:"Anderes" };
+const PLAN_FIELDS = ["type","title","planKm","planMin","planZone","planPace","planReps","planRepDist","desc"];
+const pick = (o, keys) => Object.fromEntries(keys.map(k => [k, o[k] ?? null]));
+const dayDiff = (a, b) => Math.round((parse(b) - parse(a)) / 864e5);
+const shortDay = ds => { const d = parse(ds); return `${WD[(d.getDay()+6)%7]} ${fmtDM(d)}`; };
+const sessLabel = s => s.title || TYPES[s.type]?.label || "Einheit";
+const open_ = s => !s.actual && !s.skipped && s.type !== "rest";
+let lastBulk = null; // { label, before: [[id, body|null]] }
+
+// Mehrere Änderungen auf einmal: lokal speichern, einmal zeichnen, Rücknahme merken
+function applyBulk(label, changes){
+  const before = changes.map(([id]) => { const s = state.sessions.get(id); return [id, s ? strip(s) : null]; });
+  changes.forEach(([id, body]) => put("sessions", id, body, true));
+  saveLocalDb(); applyDocs(); render(); scheduleSync(100);
+  lastBulk = { label, before };
+}
+function undoBulk(){
+  if (!lastBulk) return;
+  lastBulk.before.forEach(([id, body]) => put("sessions", id, body, true));
+  saveLocalDb(); applyDocs(); render(); scheduleSync(100);
+  toast("Rückgängig gemacht: " + lastBulk.label); lastBulk = null;
+}
+
+/* Ausfall: Einheiten im Zeitraum fallen aus, danach sanfter Wiedereinstieg.
+   Faustregel: so viele Tage locker, wie du ausgefallen bist (mind. 3, höchstens 14).
+   Erste Hälfte 70 % Umfang, zweite Hälfte 85 %; Intervalle und Tempo werden zu lockeren Läufen. */
+function pausePlan(P){
+  if (!P.from || !P.to || P.to < P.from) return { skip:[], adjust:[], span:0 };
+  const skip = inRange(P.from, P.to).filter(open_).sort(byDate);
+  const n = dayDiff(P.from, P.to) + 1, span = P.ease ? Math.min(14, Math.max(3, n)) : 0;
+  const a = iso(addDays(parse(P.to), 1)), b = iso(addDays(parse(P.to), span));
+  const adjust = [];
+  if (span) inRange(a, b).filter(s => open_(s) && !s.adj && RUN(s) && s.type !== "race").sort(byDate).forEach(s => {
+    const f = dayDiff(a, s.date) < span / 2 ? 0.7 : 0.85;
+    const km = s.planKm ? Math.max(3, Math.round(s.planKm * f)) : null;
+    const body = { ...strip(s), adj:{ reason:P.reason, orig:pick(s, PLAN_FIELDS) } };
+    if (isHard(s)){
+      Object.assign(body, { type:"easy", title:"Locker statt " + sessLabel(s), planReps:null, planRepDist:null, planPace:null,
+        planZone: mpSec() ? "easy" : null, planKm: km, planMin: km ? null : (s.planMin ? Math.round(s.planMin * f) : null),
+        desc:`Wiedereinstieg nach dem Ausfall: ganz locker, Puls Zone 2, kein Tempo. Fühlst du dich noch schlapp, lass die Einheit ausfallen.` });
+    } else {
+      Object.assign(body, { planKm: km, planMin: !km && s.planMin ? Math.round(s.planMin * f) : s.planMin });
+    }
+    adjust.push({ s, body, f });
+  });
+  return { skip, adjust, span };
+}
+
+let P = null, PT = null, toolArm = false;
+function openPause(from, to){
+  const t = iso(today());
+  P = { from: from || t, to: to || from || t, reason:"sick", ease:true };
+  toolArm = false; renderPause(); if (!$("toolDlg").open) $("toolDlg").showModal();
+}
+function renderPause(){
+  const r = pausePlan(P), grab = `<div class="grab" aria-hidden="true"></div>`;
+  const rows = r.skip.map(s => `<li><span>${shortDay(s.date)}</span><b>${esc(sessLabel(s))}</b><em class="x">fällt aus</em></li>`)
+    .concat(r.adjust.map(({ s, body }) => `<li><span>${shortDay(s.date)}</span><b>${esc(sessLabel(s))}</b><em>${body.type !== s.type ? "locker" : ""}${body.planKm && s.planKm ? ` ${fmtKm(s.planKm)} → ${fmtKm(body.planKm)} km` : ""}</em></li>`)).join("");
+  $("toolBody").innerHTML = `${grab}<h3>Ausfall eintragen</h3>
+    <p class="note">Einheiten in diesem Zeitraum werden als ausgefallen markiert. Sie zählen nicht als verpasst und werden nicht nachgeholt.</p>
+    <div class="row"><label>Von<input type="date" id="p_from" value="${P.from}"></label><label>Bis<input type="date" id="p_to" value="${P.to}"></label></div>
+    <div class="sublbl">Grund</div>
+    <div class="feel" id="p_reason">${Object.entries(PAUSE_REASONS).map(([k, v]) => `<button type="button" data-r="${k}" aria-pressed="${P.reason === k}">${v}</button>`).join("")}</div>
+    <label class="toggle"><input type="checkbox" id="p_ease" ${P.ease ? "checked" : ""}> Danach sanft wieder einsteigen</label>
+    ${P.ease ? `<p class="hint">${r.span} Tage danach nur locker: Intervalle und Tempo werden zu lockeren Läufen, Umfang erst 70 %, dann 85 %. Jede Anpassung lässt sich in der Einheit zurücknehmen.</p>` : ""}
+    ${rows ? `<ul class="plist">${rows}</ul>` : `<p class="note">In diesem Zeitraum ist nichts Offenes geplant.</p>`}
+    <div class="err" id="p_err" hidden></div>
+    <div class="actions"><div class="r"><button type="button" class="btn" id="p_cancel">Abbrechen</button>
+      <button type="button" class="btn primary" id="p_save" ${rows ? "" : "disabled"}>Eintragen</button></div></div>`;
+  $("p_from").onchange = e => { P.from = e.target.value; if (P.to < P.from) P.to = P.from; renderPause(); };
+  $("p_to").onchange = e => { P.to = e.target.value; renderPause(); };
+  $("p_reason").querySelectorAll("button").forEach(b => b.onclick = () => { P.reason = b.dataset.r; if (P.reason === "other") P.ease = false; else P.ease = true; renderPause(); });
+  $("p_ease").onchange = e => { P.ease = e.target.checked; renderPause(); };
+  $("p_cancel").onclick = () => $("toolDlg").close();
+  $("p_save").onclick = () => {
+    if (P.to < P.from){ $("p_err").textContent = "Das Ende liegt vor dem Anfang."; $("p_err").hidden = false; return; }
+    const at = new Date().toISOString();
+    const changes = r.skip.map(s => [s.id, { ...strip(s), skipped:{ reason:P.reason, from:P.from, to:P.to, at } }])
+      .concat(r.adjust.map(({ s, body }) => [s.id, body]));
+    applyBulk("Ausfall eintragen", changes);
+    $("toolDlg").close();
+    toast(`${r.skip.length} ${r.skip.length === 1 ? "Einheit fällt" : "Einheiten fallen"} aus${r.adjust.length ? `, ${r.adjust.length} angepasst` : ""}.${P.reason === "other" ? "" : " Gute Besserung!"}`);
+  };
+}
+
+/* Plan anpassen: Änderungen für einen ganzen Zeitraum */
+const PLAN_ACTS = { add:"Hinzufügen", remove:"Entfernen", retype:"Art ändern", scale:"Umfang", move:"Wochentag" };
+function planEnd(){ const st = state.settings || {}; const last = list().reduce((a, s) => s.date > a ? s.date : a, iso(today())); return st.raceDate && st.raceDate < last ? st.raceDate : last; }
+function openPlanTool(){
+  PT = PT || { act:"remove", type:"strength", newType:"boulder", pct:-10, wdFrom:2, wdTo:1, wd:4, km:6, min:60 };
+  PT.from = iso(today()); PT.to = planEnd(); toolArm = false;
+  renderPlanTool(); if (!$("toolDlg").open) $("toolDlg").showModal();
+}
+const typeMatch = (s, t) => t === "runs" ? RUN(s) && s.type !== "race" : t === "all" ? s.type !== "race" && s.type !== "rest" : s.type === t;
+function planChanges(){
+  const t = PT, out = [];
+  if (!t.from || !t.to || t.to < t.from) return out;
+  if (t.act === "add"){
+    // In jeder Woche des Zeitraums am gewählten Wochentag, wenn dort noch keine Einheit dieser Art liegt
+    for (let d = addDays(sow(parse(t.from)), t.wd); iso(d) <= t.to; d = addDays(d, 7)){
+      const ds = iso(d); if (ds < t.from) continue;
+      if (inRange(ds, ds).some(s => s.type === t.newType)) continue;
+      const nr = NONRUN.has(t.newType);
+      out.push([newId(), { date:ds, type:t.newType, title:"", planKm: nr ? null : (+t.km || null), planMin: nr ? (+t.min || null) : null,
+        planZone: !nr && mpSec() && TYPE_ZONE[t.newType] ? TYPE_ZONE[t.newType] : null, planPace:null, planReps:null, planRepDist:null,
+        desc:"", example:false, created:Date.now(), actual:null }, null]);
+    }
+    return out;
+  }
+  inRange(t.from, t.to).filter(s => open_(s) && typeMatch(s, t.type)).sort(byDate).forEach(s => {
+    if (t.act === "remove") out.push([s.id, null, s]);
+    else if (t.act === "retype"){
+      if (s.type === t.newType) return;
+      const nr = NONRUN.has(t.newType);
+      out.push([s.id, { ...strip(s), type:t.newType, title:"", planReps:null, planRepDist:null,
+        planKm: nr ? null : s.planKm ?? null, planPace: nr ? null : s.planPace ?? null,
+        planZone: nr ? null : (mpSec() && TYPE_ZONE[t.newType] ? TYPE_ZONE[t.newType] : s.planZone ?? null) }, s]);
+    } else if (t.act === "scale"){
+      const f = 1 + t.pct / 100, km = s.planKm ? Math.max(1, Math.round(s.planKm * f * 2) / 2) : null;
+      const mn = !s.planKm && s.planMin ? Math.max(5, Math.round(s.planMin * f / 5) * 5) : s.planMin ?? null;
+      if (km === (s.planKm ?? null) && mn === (s.planMin ?? null)) return;
+      out.push([s.id, { ...strip(s), planKm:km, planMin:mn }, s]);
+    } else if (t.act === "move"){
+      const wd = (parse(s.date).getDay() + 6) % 7; if (wd !== t.wdFrom || t.wdFrom === t.wdTo) return;
+      out.push([s.id, { ...strip(s), date: iso(addDays(parse(s.date), t.wdTo - t.wdFrom)) }, s]);
+    }
+  });
+  return out;
+}
+function renderPlanTool(){
+  const t = PT, ch = planChanges(), grab = `<div class="grab" aria-hidden="true"></div>`;
+  const typeOpts = (sel, extra) => (extra ? `<option value="runs" ${sel==="runs"?"selected":""}>Alle Läufe</option><option value="all" ${sel==="all"?"selected":""}>Alle Arten (ohne Wettkampf)</option>` : "")
+    + Object.entries(TYPES).filter(([k]) => k !== "rest" || extra).map(([k, v]) => `<option value="${k}" ${sel===k?"selected":""}>${v.label}</option>`).join("");
+  const wdOpts = sel => WD_L.map((w, i) => `<option value="${i}" ${+sel===i?"selected":""}>${w}</option>`).join("");
+  let fields = "";
+  if (t.act === "add") fields = `<div class="row"><label>Art<select id="t_new">${typeOpts(t.newType)}</select></label><label>Wochentag<select id="t_wd">${wdOpts(t.wd)}</select></label></div>
+      <div class="row">${NONRUN.has(t.newType) ? `<label>Dauer (min)<input type="number" id="t_min" min="5" step="5" value="${t.min}" inputmode="numeric"></label>` : `<label>Distanz (km)<input type="number" id="t_km" min="1" step="0.5" value="${t.km}" inputmode="decimal"></label>`}</div>`;
+  else {
+    fields = `<label>Welche Einheiten<select id="t_type">${typeOpts(t.type, true)}</select></label>`;
+    if (t.act === "retype") fields += `<label>Neue Art<select id="t_new">${typeOpts(t.newType)}</select></label>`;
+    if (t.act === "scale") fields += `<div class="sublbl">Umfang ändern</div><div class="feel" id="t_pct">${[-30,-20,-10,10,20].map(p => `<button type="button" data-p="${p}" aria-pressed="${t.pct===p}">${p > 0 ? "+" : "−"}${Math.abs(p)} %</button>`).join("")}</div>`;
+    if (t.act === "move") fields += `<div class="row"><label>Von<select id="t_wdf">${wdOpts(t.wdFrom)}</select></label><label>Auf<select id="t_wdt">${wdOpts(t.wdTo)}</select></label></div>`;
+  }
+  const verb = { add:"neu", remove:"werden entfernt", retype:"bekommen die neue Art", scale:"werden angepasst", move:"werden verschoben" }[t.act];
+  const rows = ch.slice(0, 8).map(([id, body, s]) => {
+    const d = (body || s).date, lbl = s ? sessLabel(s) : TYPES[body.type].label;
+    const what = t.act === "scale" ? (s.planKm ? `${fmtKm(s.planKm)} → ${fmtKm(body.planKm)} km` : `${s.planMin} → ${body.planMin} min`)
+      : t.act === "move" ? `→ ${shortDay(body.date)}` : t.act === "retype" ? `→ ${TYPES[body.type].label}` : t.act === "remove" ? "entfernt" : (body.planKm ? fmtKm(body.planKm) + " km" : body.planMin ? body.planMin + " min" : "neu");
+    return `<li><span>${shortDay(d)}</span><b>${esc(lbl)}</b><em class="${t.act === "remove" ? "x" : ""}">${what}</em></li>`;
+  }).join("");
+  $("toolBody").innerHTML = `${grab}<h3>Plan anpassen</h3>
+    <div class="feel" id="t_act">${Object.entries(PLAN_ACTS).map(([k, v]) => `<button type="button" data-a="${k}" aria-pressed="${t.act===k}">${v}</button>`).join("")}</div>
+    <div class="row"><label>Ab<input type="date" id="t_from" value="${t.from}"></label><label>Bis<input type="date" id="t_to" value="${t.to}"></label></div>
+    ${fields}
+    <p class="hint">${ch.length ? `${ch.length} ${ch.length === 1 ? "Einheit" : "Einheiten"} ${verb}${ch.length ? ` (KW ${isoWeek(parse((ch[0][1]||ch[0][2]).date))}–${isoWeek(parse((ch[ch.length-1][1]||ch[ch.length-1][2]).date))})` : ""}.` : "Keine passenden Einheiten im Zeitraum."} Erledigte und ausgefallene Einheiten bleiben unverändert.</p>
+    ${rows ? `<ul class="plist">${rows}${ch.length > 8 ? `<li class="more">… und ${ch.length - 8} weitere</li>` : ""}</ul>` : ""}
+    ${lastBulk ? `<button type="button" class="linkbtn" id="t_undo">Rückgängig: ${esc(lastBulk.label)}</button>` : ""}
+    <div class="actions"><div class="r"><button type="button" class="btn" id="t_close">Fertig</button>
+      <button type="button" class="btn primary ${toolArm ? "armed" : ""}" id="t_apply" ${ch.length ? "" : "disabled"}>${toolArm ? "Wirklich ändern?" : "Anwenden"}</button></div></div>`;
+  const re = () => { toolArm = false; renderPlanTool(); };
+  $("t_act").querySelectorAll("button").forEach(b => b.onclick = () => { t.act = b.dataset.a; re(); });
+  $("t_from").onchange = e => { t.from = e.target.value; re(); };
+  $("t_to").onchange = e => { t.to = e.target.value; re(); };
+  const bind = (id, k, num) => { if ($(id)) $(id).onchange = e => { t[k] = num ? +e.target.value : e.target.value; re(); }; };
+  bind("t_type", "type"); bind("t_new", "newType"); bind("t_wd", "wd", true); bind("t_wdf", "wdFrom", true); bind("t_wdt", "wdTo", true); bind("t_km", "km", true); bind("t_min", "min", true);
+  if ($("t_pct")) $("t_pct").querySelectorAll("button").forEach(b => b.onclick = () => { t.pct = +b.dataset.p; re(); });
+  if ($("t_undo")) $("t_undo").onclick = () => { undoBulk(); re(); };
+  $("t_close").onclick = () => $("toolDlg").close();
+  $("t_apply").onclick = () => {
+    if (!toolArm){ toolArm = true; renderPlanTool(); return; }
+    toolArm = false;
+    applyBulk(`${PLAN_ACTS[t.act]} (${ch.length})`, ch.map(([id, body]) => [id, body]));
+    toast(`${ch.length} ${ch.length === 1 ? "Einheit" : "Einheiten"} geändert`);
+    renderPlanTool();
+  };
 }
 
 /* Blätter nach unten wischen zum Schließen */
@@ -2036,7 +2332,7 @@ function sheetSwipe(dlg){
   dlg.addEventListener("touchend", end); dlg.addEventListener("touchcancel", end);
 }
 ["dlg","raceDlg"].forEach(id => { const f = $(id).querySelector("form"); f.insertAdjacentHTML("afterbegin", `<div class="grab" aria-hidden="true"></div>`); });
-["dlg","raceDlg","moreDlg"].forEach(id => sheetSwipe($(id)));
+["dlg","raceDlg","moreDlg","toolDlg"].forEach(id => sheetSwipe($(id)));
 
 /* Enter übernimmt die Eingabe und schließt die Tastatur */
 ["f_km","f_time"].forEach(id => $(id).addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); $(id).blur(); updatePace(); } }));
@@ -2127,9 +2423,11 @@ function sessionFeedback(s){
 /* Wochen- und Trendauswertung */
 function formcheck(){
   const t = today(), curStart = sow(t), lastStart = addDays(curStart, -7);
-  const rng = (a, days) => inRange(iso(a), iso(addDays(a, days - 1)));
-  const lastWeek = rng(lastStart, 7), last14 = inRange(iso(addDays(t, -14)), iso(addDays(t, -1))).concat(inRange(iso(t), iso(t)));
-  const last28 = inRange(iso(addDays(curStart, -28)), iso(addDays(curStart, -1)));
+  // Ausgefallene Einheiten (krank o. Ä.) zählen nicht als verpasst
+  const act = arr => arr.filter(s => !isSkipped(s));
+  const rng = (a, days) => act(inRange(iso(a), iso(addDays(a, days - 1))));
+  const lastWeek = rng(lastStart, 7), last14 = act(inRange(iso(addDays(t, -14)), iso(addDays(t, -1))).concat(inRange(iso(t), iso(t))));
+  const last28 = act(inRange(iso(addDays(curStart, -28)), iso(addDays(curStart, -1))));
   const logged = list().filter(s => s.actual && RUN(s));
   const checks = [];
   const add = (key, title, goal, level, text) => checks.push({ key, title, goal, level, text });

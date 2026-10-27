@@ -1,6 +1,6 @@
 # Trainingsplan-App – Entwicklerhandbuch
 
-Stand: 26.10.2026 · App-Version `2026-10-26-3`
+Stand: 27.10.2026 · App-Version `2026-10-27-1`
 
 Diese Datei ist der Einstieg für jeden Chat, der am Code arbeitet. Sie liegt im Repository; das Claude-Projekt „Marathon incoming“ verweist nur noch hierher.
 
@@ -59,7 +59,8 @@ Die Datei ist in Abschnitte mit Kommentar-Überschriften gegliedert (`/* -------
 - Konstanten: `TYPES` (Trainingsarten), `NONRUN` (Arten ohne Strecke: Kraft, Bouldern, Ruhetag), `FEELS`, `ZONES` (Pace-Zonen relativ zum Marathontempo), Hilfsfunktionen für Datum, Zeit, Pace.
 - **Speicher** (`store`, `put`, `syncNow`, `init`): lokal zuerst in `localStorage` (`tp.v2.<user-id>`, ohne Konto `tp.v2.local`) mit `docs`, `outbox` (wartende Änderungen) und `lastSync`. Abgleich mit Supabase: erst `outbox` hochladen (upsert), dann Änderungen seit `lastSync` holen. Anmeldung, Registrierung, Passwort zurücksetzen in derselben Sektion.
 - **Rendering Web:** `render()`, `renderHero`, `renderWeek`, `renderMonth`, `renderHalf` (mit Formcheck oben).
-- **Handy-App:** `renderMobile()` mit `mToday`, `mWeek`, `mMonth`, `mHalf` (Tab „Analyse“, erste Karte = Formcheck); Zustand in `M`.
+- **Handy-App:** `renderMobile()` mit `mToday` (Ringe, Formcheck, „Weg zum Rennen“ über `pathWeeks`/`pathHtml`), `mWeek`, `mMonth`, `mHalf` (Tab „Analyse“, erste Karte = Formcheck); Zustand in `M`.
+- **Ausfall & Plan anpassen** (Dialog `#toolDlg`): `openPause`/`pausePlan` (Ausfall mit Wiedereinstieg), `openPlanTool`/`planChanges` (Sammeländerungen), gemeinsam `applyBulk`/`undoBulk`.
 - **Dialoge:** Einheit (`openSession`, Formular `#form`), Wettkampf & Ziele (`openRace`), Einstellungen (`renderMore`, Ansichten `main`, `design`, `colors`, `data`, `account`), Schnellbewertung nach dem Haken (`renderQuick`).
 - **Formcheck** (`formcheck()`, `formcheckHtml()`, `sessionFeedback()`, `showFeedback()`): regelbasiert, ohne KI, Grenzwerte in `GOALS`.
 - **Weiteres:** Excel-Export (`exportExcel`, SheetJS lokal), Sicherung/Import als JSON (`exportJson`, Import über `#importFile`), Ziehen von Einheiten (Maus und Gedrückthalten am Handy), Wischen zum Schließen von Blättern (`sheetSwipe`), Eingabemasken für Zeiten (`data-mask`) und Kommazahlen (`data-dec`), Registrierung des Service Workers.
@@ -84,7 +85,7 @@ Supabase-Tabelle `public.docs`, eine Zeile pro Dokument:
 | `deleted` | `true` = gelöscht (damit andere Geräte es mitbekommen) |
 | `updated_at` | per Trigger bei jeder Änderung gesetzt, Grundlage des Abgleichs |
 
-**`sessions/<id>`** (eine Einheit): `date` (JJJJ-MM-TT), `type`, `title`, `planKm`, `planMin`, `planZone`, `planPace` (Sekunden pro km), `planReps`, `planRepDist` (m), `desc`, `example`, `created`, `actual` (`null` oder `{km, sec, hr, rpe, feel, notes, loggedAt}`).
+**`sessions/<id>`** (eine Einheit): `date` (JJJJ-MM-TT), `type`, `title`, `planKm`, `planMin`, `planZone`, `planPace` (Sekunden pro km), `planReps`, `planRepDist` (m), `desc`, `example`, `created`, `actual` (`null` oder `{km, sec, hr, rpe, feel, notes, loggedAt}`), `skipped` (`null` oder `{reason: sick|injury|other, from, to, at}` – ausgefallen, zählt nicht als geplant), `adj` (`null` oder `{reason, orig}` – nach Ausfall angepasst, `orig` = ursprüngliche Planfelder).
 
 **`settings/main`:** `raceName`, `raceDate`, `goal` (h:mm:ss), `easyHrMax` (Puls-Obergrenze lockere Läufe), `look` (`dark` | `light` | `sunrise`), `colors` (eigene Farben je Art).
 
@@ -106,11 +107,12 @@ Gesamturteil: „Auf Kurs“, „Achtung“ (1 rot oder ≥ 2 gelb), „Gegenste
 
 - Minimalistisch nach Giannis Vorlage: dunkler Schiefergrund, dünne Lato-Schrift, Großbuchstaben-Labels mit Laufweite, farbige Haarlinien statt Kästen und Schatten.
 - Handy: kein Scrollen der ganzen Seite; Inhalte passen auf den Bildschirm (sonst kompakter machen oder Nebensachen ausblenden). Fenster als Blätter von unten, nach unten wegwischbar.
+- Installierte App: `html.standalone` (gesetzt im `<head>`) hält oben mindestens `--top-gap` + 12 px frei, auch wenn iOS keinen Abstand meldet.
 - Handy-Rahmen: `.app` liegt mit `position:fixed; inset:0` über dem ganzen Bildschirm. Die Statusleiste hält `.app` frei (`padding-top`), den Home-Balken nur die Tab-Leiste `.mtabs`. Diese Abstände nie zusätzlich auf `html`/`:root` legen, sonst werden sie doppelt gerechnet.
 - Texte auf Deutsch, Du-Form, kurz und konkret. Zahlen mit deutschem Format (Komma).
 
 ## Offene Ideen
 
 - Import von Garmin-Daten (Strava-Anbindung oder Datei-Upload .fit/.gpx).
-- Plan-Generator, „Ab hier verschieben“, Warnhinweise bei zu starker Steigerung.
+- Plan-Generator, Warnhinweise bei zu starker Steigerung.
 - Optional: Puls und Notizen im Browser verschlüsseln, bevor sie hochgeladen werden.

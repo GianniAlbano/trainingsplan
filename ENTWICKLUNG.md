@@ -1,6 +1,6 @@
 # Trainingsplan-App – Entwicklerhandbuch
 
-Stand: 27.10.2026 · App-Version `2026-10-27-1`
+Stand: 27.10.2026 · App-Version `2026-10-27-2`
 
 Diese Datei ist der Einstieg für jeden Chat, der am Code arbeitet. Sie liegt im Repository; das Claude-Projekt „Marathon incoming“ verweist nur noch hierher.
 
@@ -58,8 +58,8 @@ Die Datei ist in Abschnitte mit Kommentar-Überschriften gegliedert (`/* -------
 **JavaScript** (alles in einer IIFE)
 - Konstanten: `TYPES` (Trainingsarten), `NONRUN` (Arten ohne Strecke: Kraft, Bouldern, Ruhetag), `FEELS`, `ZONES` (Pace-Zonen relativ zum Marathontempo), Hilfsfunktionen für Datum, Zeit, Pace.
 - **Speicher** (`store`, `put`, `syncNow`, `init`): lokal zuerst in `localStorage` (`tp.v2.<user-id>`, ohne Konto `tp.v2.local`) mit `docs`, `outbox` (wartende Änderungen) und `lastSync`. Abgleich mit Supabase: erst `outbox` hochladen (upsert), dann Änderungen seit `lastSync` holen. Anmeldung, Registrierung, Passwort zurücksetzen in derselben Sektion.
-- **Rendering Web:** `render()`, `renderHero`, `renderWeek`, `renderMonth`, `renderHalf` (mit Formcheck oben).
-- **Handy-App:** `renderMobile()` mit `mToday` (Ringe, Formcheck, „Weg zum Rennen“ über `pathWeeks`/`pathHtml`), `mWeek`, `mMonth`, `mHalf` (Tab „Analyse“, erste Karte = Formcheck); Zustand in `M`.
+- **Rendering Web:** `render()`, `renderHero`, `renderWeek`, `renderMonth`, `renderHalf` (oben Formzeit, Einzelfaktoren, Bereitschaft, Prognose, Fitness, Formcheck).
+- **Handy-App:** `renderMobile()` mit `mToday` (Ringe, Formcheck, „Weg zum Rennen“ über `pathWeeks`/`pathHtml`), `mWeek`, `mMonth`, `mHalf` (Tab „Analyse“: Formzeit, Woher sie kommt, Bereitschaft, Prognose, Fitness, Formcheck, dann Wochen-km, Monate, Arten); Zustand in `M`.
 - **Ausfall & Plan anpassen** (Dialog `#toolDlg`): `openPause`/`pausePlan` (Ausfall mit Wiedereinstieg), `openPlanTool`/`planChanges` (Sammeländerungen), gemeinsam `applyBulk`/`undoBulk`.
 - **Dialoge:** Einheit (`openSession`, Formular `#form`), Wettkampf & Ziele (`openRace`), Einstellungen (`renderMore`, Ansichten `main`, `design`, `colors`, `data`, `account`), Schnellbewertung nach dem Haken (`renderQuick`).
 - **Formcheck** (`formcheck()`, `formcheckHtml()`, `sessionFeedback()`, `showFeedback()`): regelbasiert, ohne KI, Grenzwerte in `GOALS`.
@@ -85,7 +85,7 @@ Supabase-Tabelle `public.docs`, eine Zeile pro Dokument:
 | `deleted` | `true` = gelöscht (damit andere Geräte es mitbekommen) |
 | `updated_at` | per Trigger bei jeder Änderung gesetzt, Grundlage des Abgleichs |
 
-**`sessions/<id>`** (eine Einheit): `date` (JJJJ-MM-TT), `type`, `title`, `planKm`, `planMin`, `planZone`, `planPace` (Sekunden pro km), `planReps`, `planRepDist` (m), `desc`, `example`, `created`, `actual` (`null` oder `{km, sec, hr, rpe, feel, notes, loggedAt}`), `skipped` (`null` oder `{reason: sick|injury|other, from, to, at}` – ausgefallen, zählt nicht als geplant), `adj` (`null` oder `{reason, orig}` – nach Ausfall angepasst, `orig` = ursprüngliche Planfelder).
+**`sessions/<id>`** (eine Einheit): `date` (JJJJ-MM-TT), `type`, `title`, `planKm`, `planMin`, `planZone`, `planPace` (Sekunden pro km), `planReps`, `planRepDist` (m), `desc`, `example`, `created`, `actual` (`null` oder `{km, sec, hr, rpe, feel, notes, half, loggedAt}`; `half` = Halbzeit in Sekunden, nur bei Wettkämpfen), `skipped` (`null` oder `{reason: sick|injury|other, from, to, at}` – ausgefallen, zählt nicht als geplant), `adj` (`null` oder `{reason, orig}` – nach Ausfall angepasst, `orig` = ursprüngliche Planfelder).
 
 **`settings/main`:** `raceName`, `raceDate`, `goal` (h:mm:ss), `easyHrMax` (Puls-Obergrenze lockere Läufe), `look` (`dark` | `light` | `sunrise`), `colors` (eigene Farben je Art).
 
@@ -101,7 +101,25 @@ Supabase-Tabelle `public.docs`, eine Zeile pro Dokument:
 | Kraft & Stabi | ≥ 75 % der Einheiten in 14 Tagen |
 | Erholung | höchstens 1 von 5 Einheiten „Schwer“ oder „Zäh“ |
 
-Gesamturteil: „Auf Kurs“, „Achtung“ (1 rot oder ≥ 2 gelb), „Gegensteuern“ (≥ 2 rot), „Noch zu wenig Daten“ (< 3 Läufe). Prognose: Riegel-Formel aus Wettkämpfen ≥ 5 km der letzten 8 Wochen.
+Gesamturteil: „Auf Kurs“, „Achtung“ (1 rot oder ≥ 2 gelb), „Gegensteuern“ (≥ 2 rot), „Noch zu wenig Daten“ (< 3 Läufe). Die Prognose kommt aus der Analyse (`analysis().fc`).
+
+## Analyse: Vergleich mit Referenzdaten (`REF`)
+
+Abschnitt „Analyse“ im JavaScript, nach dem Formcheck. Herleitung und Quellen: Projekt-Dokument „Analyse – Referenzdaten“. Neue Studienwerte nur in `REF` ändern. Ausgefallene Einheiten (`skipped`) zählen nirgends mit.
+
+| Funktion | Aufgabe |
+|---|---|
+| `trainMetrics(from, to, src)` | Ø km/Woche, Anteil locker, Qualitätseinheiten/Woche (Intervalle + Tempo), Lauftage/Woche, längster Lauf, Ø Laufdistanz, Spitzenwoche; `src` = `actual` oder `plan`. Wettkämpfe zählen nicht mit. |
+| `equivalent(m)` | Interpoliert jede Kennzahl zwischen den Bändern in `REF.bands` zu einer Marathonzeit (`bandTime`), gewichtet nach `REF.weights`, ± `REF.spread` min. `bandValue` ist die Umkehrung: typischer Wert für eine Zielzeit. |
+| `raceToMarathon(sec, km, kmWeek)` | Riegel (k 1,06) auf den Halbmarathon, × 2,19, plus `REF.volAdj`; ab 40 km direkt. |
+| `analysis(ref)` | Stichtag `ref` (Standard heute), Ergebnis je Datenstand zwischengespeichert. Fenster: 12 abgeschlossene Wochen vor `ref` (frühestens ab erstem Lauf) bzw. 12 Wochen vor der Rennwoche. Prognose `fc`: 70 % Wettkampf + 30 % Training, ± 15 min; nur Training ± 20 min. Ab 3 Wochen und 6 Läufen. |
+| `formzeitSeries()` | Formzeit je Woche ab Planstart: gelaufen (`analysis(ref).fc.mid`) bis heute, Plan (gleiche Rechnung mit Planwerten) bis zur Rennwoche. |
+| `anaFormzeitHtml`, `formzeitChart` | Übersicht: Formzeit, Änderung zu vor 4 Wochen, Wert laut Plan, Verlauf mit Zielband, Sprung-Warnungen der nächsten 14 Tage, Plantreue / Bereit / Puls-Fitness. |
+| `anaFactorsHtml` | Einzelfaktoren als Balken (dein Wert) mit Strich (typisch für die Zielzeit), Planwert, größter Hebel (Gewicht × Abstand zur Zielzeit). |
+| `readinessRows`, `anaReadyHtml` | Bereitschaft: Segmentleiste und Liste; bis 8 Wochen vor dem Rennen „Noch Zeit“ statt rot. |
+| `spikeOf(s)` | Lauf im Vergleich zum längsten Lauf der 30 Tage davor (vergangene Tage: gelaufen, ab heute: geplant). > 10 % gelb, > 30 % rot. |
+| `fitnessTrend()` | Meter pro Herzschlag bei lockeren Läufen ≥ 3 km mit Puls, 16 Wochen; letzte 4 Wochen gegen die 4 davor. |
+| `splitOf(s)` | Zweite gegen erste Hälfte aus `actual.half`; ≤ 3 % grün, ≤ 10,7 % gelb. |
 
 ## Gestaltungsregeln
 
@@ -114,5 +132,6 @@ Gesamturteil: „Auf Kurs“, „Achtung“ (1 rot oder ≥ 2 gelb), „Gegenste
 ## Offene Ideen
 
 - Import von Garmin-Daten (Strava-Anbindung oder Datei-Upload .fit/.gpx).
-- Plan-Generator, Warnhinweise bei zu starker Steigerung.
+- Plan-Generator.
+- Vickers-Vertosick-Modell mit Originalkoeffizienten (Zusatzdatei der Studie), sobald verfügbar.
 - Optional: Puls und Notizen im Browser verschlüsseln, bevor sie hochgeladen werden.

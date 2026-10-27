@@ -667,6 +667,47 @@ body.locked{overflow:hidden}
   .mrings .count,.mring svg{width:min(150px,36vw,19dvh);height:min(150px,36vw,19dvh)}
   .mrings .count .big{font-size:clamp(34px,10vw,44px)}
 }
+/* ---------- Analyse ---------- */
+.an-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+.an-grid .panel,.an-col{align-content:start}
+.an-col{display:grid;gap:32px;min-width:0}
+.an-col .an-spark{max-height:170px}
+@media (max-width:900px){.an-grid{grid-template-columns:1fr}}
+.an-big{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.an-big span{font-size:34px;font-weight:300;line-height:1.1}
+.an-big small{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.12em;text-transform:uppercase}
+.an-big.fc-ok span{color:var(--ok)} .an-big.fc-warn span{color:var(--bib)} .an-big.fc-bad span{color:var(--warn)}
+.an-h{font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--bib);margin-top:16px}
+.fc-open .fc-dot{background:var(--muted)} .fc-open .fc-lv{color:var(--muted)}
+.an-spark{width:100%;height:auto;display:block;margin:10px 0 4px}
+.spike{font-size:10px;font-weight:700;letter-spacing:.06em;white-space:nowrap}
+.spike.fc-warn{color:var(--bib)} .spike.fc-bad{color:var(--warn)}
+form:not(.israce) .raceonly{display:none!important}
+.mslide .an-big span{font-size:28px}
+.fz-chg{font-size:13px;color:var(--muted);margin-top:2px}
+.fz-up{color:var(--ok)!important} .fz-down{color:var(--warn)!important}
+.fz-chart{width:100%;height:auto;display:block;margin:10px 0 4px;font-family:var(--f-body)}
+.fz-warn{display:grid;gap:1px;border-left:2px solid var(--bib);padding:4px 0 4px 10px;margin-top:12px;font-size:13px;color:var(--muted)}
+.fz-warn b{font-weight:700;color:var(--bib)} .fz-warn.fc-bad{border-left-color:var(--warn)} .fz-warn.fc-bad b{color:var(--warn)}
+.fz-minis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}
+.fz-minis div{display:grid;gap:2px;text-align:center;padding:9px 4px;border:1px solid var(--line-soft);border-radius:10px}
+.fz-minis span{font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.fz-minis b{font-size:20px;font-weight:300}
+.fac-head{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.fac-mk{display:inline-block;width:2px;height:12px;background:var(--bib);border-radius:1px}
+.fac{display:grid;gap:5px;padding:11px 0;border-bottom:1px solid var(--line-soft)}
+.fac-t{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:14px}
+.fac-t b{font-weight:400} .fac-t small{color:var(--muted);font-size:12px}
+.fac-bar{position:relative;height:6px;border-radius:3px;background:var(--line)}
+.fac-bar i{display:block;height:100%;border-radius:3px;background:var(--accent)}
+.fac.ok .fac-bar i{background:var(--ok)}
+.fac-bar u{position:absolute;top:-4px;width:2px;height:14px;background:var(--bib);border-radius:1px;transform:translateX(-1px)}
+.fac-s{font-size:11.5px;color:var(--muted)} .fac.ok .fac-s{color:var(--ok)}
+.fac-lever{border-left:2px solid var(--accent);padding:6px 0 6px 10px;margin-top:12px;font-size:13px}
+.segbar{display:flex;gap:4px;margin-top:2px} .segbar i{flex:1;height:8px;border-radius:4px;background:var(--line)}
+.segbar i.ok{background:var(--ok)} .segbar i.warn{background:var(--bib)} .segbar i.bad{background:var(--warn)}
+.seglab{display:flex;gap:4px;font-size:10px;color:var(--muted);margin:-2px 0 4px} .seglab span{flex:1;text-align:center}
+.mslide .fac{padding:9px 0} .mslide .fz-chart{margin:6px 0 2px}
 </style>
 </head>
 <body>
@@ -775,6 +816,7 @@ body.locked{overflow:hidden}
           <label class="runonly">Distanz (km)<input type="text" id="f_km" inputmode="decimal" data-dec autocomplete="off" placeholder="10,25"></label>
           <label><span id="timeLbl">Zeit</span><input type="text" id="f_time" placeholder="0:52:30" inputmode="numeric" data-mask="hms" autocomplete="off"></label>
         </div>
+        <div class="row raceonly"><label>Halbzeit (h:mm:ss)<input type="text" id="f_half" placeholder="1:58:00" inputmode="numeric" data-mask="hms" autocomplete="off"></label></div>
         <div class="pacebox runonly">Pace <b id="paceOut">–</b><span id="paceCmp"></span></div>
         <div class="sublbl">Anstrengung</div>
         <div class="rpechips" id="rpeChips"></div>
@@ -1185,7 +1227,9 @@ function cardHtml(s){
   const pp = planPace(s), pm = planMinutes(s), zoned = s.planZone && zonePace(s.planZone);
   const plan = [s.planKm?`<span>${fmtKm(s.planKm)} km</span>`:"", pm?`<span>${zoned?"~":""}${pm} min</span>`:"",
     pp && !NONRUN.has(s.type)?`<span class="pace">${fmtPaceSec(pp)} /km</span>`:"",
-    zoned?`<span class="zone" style="--tc:var(--t-${ZONES[s.planZone].tc})">${ZONES[s.planZone].short}</span>`:""].join("");
+    zoned?`<span class="zone" style="--tc:var(--t-${ZONES[s.planZone].tc})">${ZONES[s.planZone].short}</span>`:"",
+    (() => { const sp = !s.actual && !s.skipped && s.date >= iso(today()) ? spikeOf(s) : null;
+      return sp && sp.level !== "ok" ? `<span class="spike fc-${sp.level}" title="${fmtKm(sp.km)} km, längster Lauf der 30 Tage davor ${fmtKm(sp.base)} km">▲ ${pctStr(sp.pct)}</span>` : ""; })()].join("");
   const a = s.actual, skip = st === "skipped";
   const res = skip ? `<span>Ausgefallen${s.skipped.reason && PAUSE_REASONS[s.skipped.reason] ? " · " + PAUSE_REASONS[s.skipped.reason] : ""}</span>` : a ? [a.km?`<span>${fmtKm(a.km)} km</span>`:"", a.sec?`<span>${NONRUN.has(s.type) ? fmtMin(a.sec) : fmtTime(a.sec)}</span>`:"", a.km&&a.sec?`<span>${fmtPace(a.sec,a.km)}</span>`:"", a.hr?`<span>♥ ${a.hr}</span>`:"", a.feel?`<span>${FEELS[a.feel-1]}</span>`:""].join("") : "";
   const check = st==="rest" || skip ? "" : st==="done"
@@ -1433,7 +1477,16 @@ function renderHalf(){
   const tb = Object.keys(TYPES).filter(k=>byType[k]).map(k => `<div class="tb" style="--tc:var(--t-${k})"><span>${TYPES[k].label}</span><span class="bar"><i style="width:${byType[k].n/tmax*100}%"></i></span><span class="n num">${byType[k].n}×</span></div>`).join("") || `<p class="note">Noch keine absolvierten Einheiten in diesem Halbjahr.</p>`;
 
   $("view").innerHTML = `<div style="display:grid;gap:16px">
-    <div class="panel fcpanel"><h2>Formcheck</h2>${formcheckHtml(false)}</div>
+    ${(() => { const A = analysis(); return `
+    <div class="hgrid an-grid">
+      <div class="panel anpanel"><h2>Formzeit</h2>${anaFormzeitHtml(A, false)}</div>
+      <div class="panel anpanel"><h2>Woher die Formzeit kommt</h2>${anaFactorsHtml(A, false)}</div></div>
+    <div class="hgrid an-grid">
+      <div class="panel anpanel"><h2>Bereitschaft</h2>${anaReadyHtml(A, false)}</div>
+      <div class="an-col"><div class="panel anpanel"><h2>Prognose</h2>${anaForecastHtml(A, false)}</div>
+        <div class="panel anpanel"><h2>Fitness aus dem Puls</h2>${anaFitHtml(false)}</div></div></div>
+    <div class="hgrid an-grid">
+      <div class="panel fcpanel"><h2>Formcheck</h2>${formcheckHtml(false)}</div><div></div></div>`; })()}
     <div class="panel"><h2>Wochenkilometer</h2>
       <div class="legend"><span><i class="sw" style="border:1px dashed var(--muted)"></i>geplant</span><span><i class="sw" style="background:var(--accent)"></i>gelaufen</span><span><i class="sw" style="background:var(--bib)"></i>aktuelle Woche</span></div>
       <div class="chartbox">${svg}</div></div>
@@ -1551,6 +1604,7 @@ function applyKind(){
   const t = $("f_type").value, nr = isNonrun();
   $("form").classList.toggle("nonrun", nr);
   $("form").classList.toggle("isint", t === "interval");
+  $("form").classList.toggle("israce", t === "race");
   $("form").style.setProperty("--tc", `var(--t-${t})`);
   $("sChip").textContent = TYPES[t]?.label || ""; $("sChip").style.setProperty("--tc", `var(--t-${t})`);
   $("timeLbl").textContent = nr ? "Dauer (h:mm)" : "Zeit (h:mm:ss)";
@@ -1615,6 +1669,7 @@ function openSession(id, date, logNow){
   $("f_time").value = a?.sec ? (NONRUN.has(s.type) ? fmtHM(a.sec) : fmtHMS(a.sec))
     : (logNow && s && NONRUN.has(s.type) && planMinutes(s) ? fmtHM(planMinutes(s)*60) : "");
   $("f_hr").value = a?.hr ?? "";
+  $("f_half").value = a?.half ? fmtHMS(a.half) : "";
   rpe = a?.rpe ?? null; syncRpe();
   feel = a?.feel ?? null; syncFeel();
   $("f_notes").value = a?.notes || "";
@@ -1673,9 +1728,11 @@ $("form").onsubmit = async e => {
   if ($("f_done").checked){
     const t = $("f_time").value.trim(), sec = nr ? parseDur(t) : parseTime(t);
     if (t && t.split(":").slice(1).some(x => +x > 59)){ showErr("Minuten und Sekunden dürfen höchstens 59 sein."); return; }
+    const hRaw = $("f_half").value.trim(), half = body.type === "race" && hRaw ? parseTime(hRaw) : 0;
+    if (half && sec && half >= sec){ showErr("Die Halbzeit muss kleiner als die Endzeit sein."); return; }
     if (t && !sec){ showErr(nr ? "Dauer bitte in Minuten oder als h:mm eingeben, z. B. 90 oder 1:30." : "Zeit bitte als h:mm:ss oder mm:ss eingeben, z. B. 52:30."); return; }
     body.actual = { km: nr || $("f_km").value==="" ? null : kmv("f_km"), sec: sec || null,
-      hr: nr || $("f_hr").value==="" ? null : +$("f_hr").value, rpe, feel, notes: $("f_notes").value.trim(),
+      hr: nr || $("f_hr").value==="" ? null : +$("f_hr").value, rpe, feel, notes: $("f_notes").value.trim(), half: half || null,
       loggedAt: prev?.actual?.loggedAt || new Date().toISOString() };
   } else body.actual = null;
   $("saveBtn").disabled = true;
@@ -1937,14 +1994,20 @@ function mHalf(){
       <div><b class="num">${T.avgPace ? fmtPaceSec(T.avgPace) : "–"}<small>/km</small></b><span>Ø Pace</span></div>
     </div>
     <div class="mcar" id="mCar">
+      ${(() => { const A = analysis(); return `<section class="mslide"><h3>Formzeit</h3>${anaFormzeitHtml(A, true)}</section>
+      <section class="mslide"><h3>Woher sie kommt</h3>${anaFactorsHtml(A, true)}</section>
+      <section class="mslide"><h3>Bereitschaft</h3>${anaReadyHtml(A, true)}</section>
+      <section class="mslide"><h3>Prognose</h3>${anaForecastHtml(A, true)}</section>
+      <section class="mslide"><h3>Fitness</h3>${anaFitHtml(true)}</section>`; })()}
       <section class="mslide"><h3>Formcheck</h3>${formcheckHtml(true)}</section>
       <section class="mslide"><h3>Wochenkilometer</h3>
         <div class="legend"><span><i class="sw" style="border:1px dashed var(--muted)"></i>geplant</span><span><i class="sw" style="background:var(--accent)"></i>gelaufen</span><span><i class="sw" style="background:var(--bib)"></i>diese Woche</span></div>${svg}</section>
       <section class="mslide"><h3>Monate</h3><table><thead><tr><th>Monat</th><th>km</th><th>Pace</th><th>Quote</th></tr></thead><tbody>${rows}</tbody></table></section>
       <section class="mslide"><h3>Trainingsarten</h3><div class="typebars">${tb}</div></section>
     </div>
-    <div class="mdots" aria-hidden="true">${[0,1,2,3].map(i => `<i class="${i===M.slide?"on":""}"></i>`).join("")}</div>`;
+    <div class="mdots" aria-hidden="true">${[0,1,2,3,4,5,6,7,8].map(i => `<i class="${i===M.slide?"on":""}"></i>`).join("")}</div>`;
   const car = $("mCar");
+  M.slide = Math.min(M.slide, car.children.length - 1);
   car.scrollLeft = car.children[M.slide].offsetLeft - car.offsetLeft;
   car.onscroll = () => {
     const i = Math.round(car.scrollLeft / (car.clientWidth + 16));
@@ -2386,8 +2449,6 @@ function phaseInfo(){
   const name = days < 0 ? "Nach dem Rennen" : w <= 0 ? "Rennwoche" : w <= 3 ? "Tapering" : w <= 18 ? "Marathonvorbereitung" : "Grundlagenphase";
   return { days, weeks: w, name };
 }
-// Marathon-Prognose nach Riegel aus einem Wettkampf ab 5 km
-function riegel(sec, km){ return sec * Math.pow(42.195 / km, 1.06); }
 
 /* Rückmeldung zu einer einzelnen Einheit */
 function sessionFeedback(s){
@@ -2408,14 +2469,18 @@ function sessionFeedback(s){
     if (a.rpe >= GOALS.hardRpe) warn(`Sehr hart (${a.rpe}/10). Geh die Wiederholungen beim nächsten Mal etwas ruhiger an.`);
     else if (a.rpe && a.rpe <= 5) notes.push("Fühlte sich leicht an: ein gutes Zeichen für deine Form.");
   } else if (s.type === "race" && a.km >= 5 && a.sec){
-    const p = riegel(a.sec, a.km), g = goalSec(state.settings && state.settings.goal);
-    notes.push(`${fmtPaceSec(pace)} /km. Hochgerechnet auf den Marathon: ${fmtTime(p)}${g ? (p <= g ? " – im Bereich deiner Zielzeit." : ` (Ziel ${fmtTime(g)}).`) : "."}`);
+    const r = raceToMarathon(a.sec, +a.km, (analysis().act || {}).kmWeek || 0), g = goalSec(state.settings && state.settings.goal);
+    notes.push(a.km >= 40 ? `${fmtPaceSec(pace)} /km. Glückwunsch zum Marathon!` : `${fmtPaceSec(pace)} /km. Hochgerechnet auf den Marathon: etwa ${fmtHM(r.est - 15*60)}–${fmtHM(r.est + 15*60)} h${g ? (r.est <= g + 5*60 ? ", im Bereich deiner Zielzeit." : ` (Ziel ${fmtHM(g)}).`) : "."}`);
+    const so = splitOf(s);
+    if (so) (so.level === "bad" ? warn : t => notes.push(t))(`Zweite Hälfte ${pctStr(so.pct, 1)} gegenüber der ersten${so.level === "ok" ? ": gut eingeteilt." : so.level === "warn" ? ", im üblichen Rahmen." : ". Beim nächsten Mal ruhiger anlaufen."}`);
   }
   if (RUN(s) && a.km && s.planKm){
     const r = a.km / s.planKm;
     if (r < 0.85) warn(`Kürzer als geplant (${fmtKm(a.km)} von ${fmtKm(s.planKm)} km).`);
     else if (r > 1 + GOALS.overPlan) warn(`Länger als geplant (${fmtKm(a.km)} statt ${fmtKm(s.planKm)} km).`);
   }
+  const sp = spikeOf(s);
+  if (sp && sp.level !== "ok") warn(`${fmtKm(sp.km)} km sind ${pctStr(sp.pct)} mehr als dein längster Lauf der 30 Tage davor (${fmtKm(sp.base)} km). Steigere einzelne Läufe lieber in kleineren Schritten.`);
   if (a.feel && a.feel <= GOALS.heavyFeel) warn("Hat sich schwer angefühlt. Häufen sich solche Tage, lieber einen Ruhetag einschieben.");
   return { level, text: notes.join(" ") };
 }
@@ -2487,13 +2552,8 @@ function formcheck(){
       heavy ? `${heavy} der letzten ${recent.length} Einheiten ${heavy === 1 ? "fühlte" : "fühlten"} sich schwer an.` : "Du fühlst dich zuletzt gut.");
   }
 
-  // Prognose aus Wettkämpfen der letzten 8 Wochen
-  const races = list().filter(s => s.type === "race" && s.actual && s.actual.km >= 5 && s.actual.sec && s.date >= iso(addDays(t, -56)));
-  let forecast = null;
-  if (races.length){
-    const best = races.map(s => ({ s, p: riegel(s.actual.sec, s.actual.km) })).sort((a, b) => a.p - b.p)[0];
-    forecast = { sec: best.p, from: best.s };
-  }
+  // Prognose: siehe Analyse (Wettkampf und Training im Vergleich mit Referenzdaten)
+  const forecast = analysis().fc;
 
   // Gesamturteil
   const scored = checks.map(c => LV[c.level]);
@@ -2515,13 +2575,372 @@ function formcheckHtml(compact){
       <div><div class="fc-label">${f.verdict.label}</div><div class="fc-text">${f.verdict.text}</div></div>
       ${f.score !== null && f.verdict.level !== "na" ? `<div class="fc-score num">${f.score}<small>%</small></div>` : ""}
     </div>
-    ${ph ? `<div class="fc-meta">${ph.days >= 0 ? `Noch ${ph.weeks} Wochen bis zum Rennen` : "Rennen vorbei"} · ${ph.name}${f.forecast ? ` · Prognose ${fmtTime(f.forecast.sec)}${g ? " (Ziel " + fmtTime(g) + ")" : ""}` : ""}</div>` : ""}`;
+    ${ph ? `<div class="fc-meta">${ph.days >= 0 ? `Noch ${ph.weeks} Wochen bis zum Rennen` : "Rennen vorbei"} · ${ph.name}${f.forecast ? ` · Prognose ${fmtHM(f.forecast.lo)}–${fmtHM(f.forecast.hi)}${g ? " (Ziel " + fmtHM(g) + ")" : ""}` : ""}</div>` : ""}`;
   const rows = f.checks.map(c => `<div class="fc-row fc-${c.level}">
       <span class="fc-dot"></span>
       <div class="fc-body"><div class="fc-t">${c.title}<span class="fc-lv">${LV_LABEL[c.level]}</span></div>
       <div class="fc-x">${esc(c.text)}</div>${compact ? "" : `<div class="fc-goal">Ziel: ${esc(c.goal)}</div>`}</div></div>`).join("");
   return head + (rows ? `<div class="fc-list">${rows}</div>` : `<p class="note">Sobald Einheiten aus der letzten Woche eingetragen sind, erscheinen hier die einzelnen Ziele.</p>`)
     + `<p class="note fc-foot">Ausgewertet wird direkt auf deinem Gerät nach festen Regeln, ohne KI und ohne dass Daten das Gerät verlassen.${!(state.settings && state.settings.easyHrMax) ? " Tipp: Trag unter Wettkampf & Ziele deine Puls-Obergrenze für lockere Läufe ein." : ""}</p>`;
+}
+
+/* =====================================================================
+   Analyse: Vergleich mit Referenzdaten aus Studien. Läuft komplett offline,
+   regelbasiert, ohne KI. Herleitung und Quellen: Projekt-Dokument
+   „Analyse – Referenzdaten“.
+   ===================================================================== */
+const REF = {
+  // Typische Trainingswerte je Zielzeit (Gruppenmittel). min = Zielzeit in Minuten.
+  // km: Ø Wochen-km · easy: Anteil lockerer km in % · q: Qualitätseinheiten/Woche · days: Lauftage/Woche
+  bands: [
+    { min:170, km:100, easy:80, q:2.5,  days:6.5 },  // unter 3:00
+    { min:195, km:68,  easy:70, q:2,    days:6   },  // 3:00–3:30
+    { min:225, km:55,  easy:62, q:1.5,  days:5   },  // 3:30–4:00
+    { min:255, km:40,  easy:55, q:0.5,  days:3.5 },  // 4:00–4:30
+    { min:300, km:22,  easy:50, q:0.25, days:3   }   // um 5:00
+  ],
+  weights: { km:0.55, days:0.2, easy:0.15, q:0.1 },  // Umfang ist der stärkste Einzelfaktor
+  spread: 20,          // Unschärfe der Einordnung in Minuten (±)
+  rangeMin: 160, rangeMax: 320,
+  riegelK: 1.06,       // Riegel: gut kalibriert bis zum Halbmarathon
+  hmFactor: 2.19,      // Marathon ≈ Halbmarathon × 2,19 (Vickers & Vertosick 2016)
+  volAdj: { low:40, lowSec:6*60, high:65, highSec:-14*60 }, // < 40 km/Woche +6 min, > 65 km/Woche −14 min
+  ready: { longGood:30, longMin:25, kmGood:40, kmMin:30, avgRun:10, avgRunMin:8, q:1, taperLo:40, taperHi:60 },
+  spike: { warn:10, bad:30 },   // Garmin-RUNSAFE 2025: Lauf > 10 % über dem längsten der letzten 30 Tage
+  split: { men:10.7, women:8.3 }, // Berlin-Marathon 1999–2025: mittlere Verlangsamung
+  weeks: 12            // Auswertungsfenster
+};
+const isRace = s => s.type === "race";
+const isQuality = s => s.type === "interval" || s.type === "tempo";
+const fmtMinHM = min => fmtHM(min * 60);
+
+// Zeit (min), die zu einem Trainingswert passt: lineare Interpolation zwischen den Bändern
+function bandTime(key, v){
+  const b = REF.bands;
+  if (!(v > 0)) return b[b.length-1].min;
+  if (v >= b[0][key]) return b[0].min;
+  for (let i = 0; i < b.length - 1; i++){
+    const hi = b[i][key], lo = b[i+1][key];
+    if (v <= hi && v >= lo) return hi === lo ? b[i].min : b[i].min + (hi - v) / (hi - lo) * (b[i+1].min - b[i].min);
+  }
+  return b[b.length-1].min;
+}
+
+// Kennzahlen eines Zeitraums. src "actual" = gelaufene Werte, "plan" = Planwerte
+function trainMetrics(from, to, src){
+  const weeks = Math.max(1, Math.round((parse(to) - parse(from)) / 864e5 + 1) / 7);
+  const runs = inRange(from, to).filter(s => RUN(s) && !isRace(s) && !(s.skipped && !s.actual)).map(s => {
+    const km = src === "plan" ? +s.planKm || 0 : (s.actual ? +s.actual.km || 0 : 0);
+    return { s, km };
+  }).filter(r => r.km > 0);
+  const total = runs.reduce((n, r) => n + r.km, 0);
+  const easyKm = runs.filter(r => r.s.type === "easy").reduce((n, r) => n + r.km, 0);
+  const wk = new Map();
+  runs.forEach(r => { const k = iso(sow(parse(r.s.date))); wk.set(k, (wk.get(k) || 0) + r.km); });
+  return {
+    weeks, runs: runs.length, total,
+    kmWeek: total / weeks,
+    easy: total ? easyKm / total * 100 : 0,
+    q: runs.filter(r => isQuality(r.s)).length / weeks,
+    days: new Set(runs.map(r => r.s.date)).size / weeks,
+    longest: Math.max(0, ...runs.map(r => r.km)),
+    avgRun: runs.length ? total / runs.length : 0,
+    peakWeek: Math.max(0, ...wk.values())
+  };
+}
+// Gelaufen: die letzten 12 abgeschlossenen Wochen, frühestens ab dem ersten eingetragenen Lauf
+function actualWindow(ref = today()){
+  const end = addDays(sow(ref), -1);
+  let start = addDays(sow(ref), -7 * REF.weeks);
+  const first = list().filter(s => s.actual && RUN(s) && +s.actual.km > 0).map(s => s.date).sort()[0];
+  if (first && parse(first) > start) start = sow(parse(first));
+  if (start > end) return null;
+  return { from: iso(start), to: iso(end) };
+}
+// Plan: die 12 Wochen vor der Rennwoche
+function planWindow(){
+  const rd = state.settings && state.settings.raceDate; if (!rd) return null;
+  const rw = sow(parse(rd));
+  return { from: iso(addDays(rw, -7 * REF.weeks)), to: iso(addDays(rw, -1)) };
+}
+// Einordnung: welche Zielzeit passt typischerweise zu diesem Training?
+function equivalent(m){
+  const parts = [
+    { key:"km",   label:"Wochenumfang",      val:m.kmWeek, txt:`${fmtKm(m.kmWeek)} km/Woche` },
+    { key:"days", label:"Lauftage",          val:m.days,   txt:`${fmtKm(m.days)} pro Woche` },
+    { key:"easy", label:"Anteil locker",     val:m.easy,   txt:`${Math.round(m.easy)} % der km` },
+    { key:"q",    label:"Qualitätseinheiten", val:m.q,     txt:`${fmtKm(m.q)} pro Woche` }
+  ].map(p => ({ ...p, min: bandTime(p.key, p.val), w: REF.weights[p.key] }));
+  const mid = parts.reduce((n, p) => n + p.min * p.w, 0) / parts.reduce((n, p) => n + p.w, 0);
+  return { mid, lo: mid - REF.spread, hi: mid + REF.spread, parts };
+}
+
+// Prognose: Wettkampf (Riegel bis HM, dann × 2,19, Umfangskorrektur) kombiniert mit der Einordnung
+function volAdjust(kmWeek){
+  const v = REF.volAdj;
+  if (!(kmWeek > 0)) return 0;
+  return kmWeek < v.low ? v.lowSec : kmWeek > v.high ? v.highSec : 0;
+}
+function raceToMarathon(sec, km, kmWeek){
+  if (km >= 40) return { est: sec * Math.pow(42.195 / km, REF.riegelK), opt: sec * Math.pow(42.195 / km, REF.riegelK), adj: 0 };
+  const hm = sec * Math.pow(21.0975 / km, REF.riegelK), adj = volAdjust(kmWeek);
+  return { est: hm * REF.hmFactor + adj, opt: sec * Math.pow(42.195 / km, REF.riegelK), adj };
+}
+// Ergebnis je Datenstand und Stichtag zwischenspeichern (der Verlauf ruft die Analyse für viele Wochen auf)
+let anaCache = new WeakMap();
+function analysis(ref = today()){
+  const key = iso(ref) + "|" + ((state.settings && state.settings.raceDate) || "");
+  let c = anaCache.get(state.sessions); if (!c){ c = new Map(); anaCache.set(state.sessions, c); }
+  if (!c.has(key)) c.set(key, analysisAt(ref));
+  return c.get(key);
+}
+function analysisAt(ref){
+  const aw = actualWindow(ref), pw = planWindow();
+  const act = aw ? trainMetrics(aw.from, aw.to, "actual") : null;
+  const plan = pw ? trainMetrics(pw.from, pw.to, "plan") : null;
+  const enough = act && act.weeks >= 3 && act.runs >= 6;
+  const eqAct = enough ? equivalent(act) : null;
+  const eqPlan = plan && plan.runs >= 6 ? equivalent(plan) : null;
+  // Wettkämpfe ab 5 km aus den 16 Wochen vor dem Stichtag
+  const t = ref;
+  const races = list().filter(s => isRace(s) && s.actual && +s.actual.km >= 5 && s.actual.sec && s.date <= iso(t) && s.date >= iso(addDays(t, -112)))
+    .map(s => ({ s, ...raceToMarathon(s.actual.sec, +s.actual.km, act ? act.kmWeek : 0) })).sort((a, b) => a.est - b.est);
+  const race = races[0] || null;
+  let fc = null;
+  if (race && eqAct){ const mid = race.est * 0.7 + eqAct.mid * 60 * 0.3; fc = { mid, lo: mid - 15*60, hi: mid + 15*60, basis:"Wettkampf und Training" }; }
+  else if (race) fc = { mid: race.est, lo: race.est - 15*60, hi: race.est + 20*60, basis:"Wettkampf" };
+  else if (eqAct) fc = { mid: eqAct.mid * 60, lo: eqAct.lo * 60, hi: eqAct.hi * 60, basis:"Training" };
+  return { aw, pw, act, plan, eqAct, eqPlan, race, fc };
+}
+
+// Einzelner Lauf im Vergleich zum längsten Lauf der 30 Tage davor (vergangene: gelaufen, künftige: geplant)
+function runKmOf(s, ts){
+  if (s.actual) return +s.actual.km || 0;
+  if (s.skipped) return 0;
+  return s.date >= ts ? +s.planKm || 0 : 0;
+}
+function spikeOf(s){
+  if (!s || !RUN(s) || isRace(s)) return null;
+  const ts = iso(today()), km = runKmOf(s, ts); if (km < 5) return null;
+  const from = iso(addDays(parse(s.date), -30));
+  const base = Math.max(0, ...list().filter(x => x.id !== s.id && RUN(x) && x.date >= from && x.date < s.date).map(x => runKmOf(x, ts)));
+  if (!base) return null;
+  const pct = (km / base - 1) * 100;
+  const level = pct > REF.spike.bad ? "bad" : pct > REF.spike.warn ? "warn" : "ok";
+  return { km, base, pct, level };
+}
+function upcomingSpikes(days){
+  const ts = iso(today()), te = iso(addDays(today(), days));
+  return list().filter(s => !s.actual && s.date >= ts && s.date <= te).map(s => ({ s, sp: spikeOf(s) }))
+    .filter(x => x.sp && x.sp.level !== "ok").sort((a, b) => byDate(a.s, b.s));
+}
+
+// Fitness aus dem Puls: Meter pro Herzschlag bei lockeren Läufen
+function fitnessTrend(){
+  const from = iso(addDays(today(), -7 * 16));
+  const pts = list().filter(s => s.type === "easy" && s.actual && +s.actual.km >= 3 && s.actual.sec && s.actual.hr && s.date >= from)
+    .sort(byDate).map(s => ({ date: s.date, v: (s.actual.km * 1000) / (s.actual.sec / 60) / s.actual.hr }));
+  if (pts.length < 3) return { pts, change: null };
+  const cut = iso(addDays(today(), -28)), cut2 = iso(addDays(today(), -56));
+  const mean = a => a.length ? a.reduce((n, p) => n + p.v, 0) / a.length : 0;
+  const recent = pts.filter(p => p.date >= cut), before = pts.filter(p => p.date >= cut2 && p.date < cut);
+  const change = recent.length >= 2 && before.length >= 2 ? (mean(recent) / mean(before) - 1) * 100 : null;
+  return { pts, change, now: mean(recent.length ? recent : pts.slice(-3)) };
+}
+
+// Renneinteilung: zweite Hälfte im Vergleich zur ersten
+function splitOf(s){
+  const a = s && s.actual; if (!a || !a.half || !a.sec || a.half >= a.sec) return null;
+  const first = a.half, second = a.sec - a.half, pct = (second / first - 1) * 100;
+  const level = pct <= 3 ? "ok" : pct <= REF.split.men ? "warn" : "bad";
+  return { first, second, pct, level };
+}
+
+/* ---------- Darstellung ---------- */
+const pctStr = (p, d = 0) => (p > 0 ? "+" : p < 0 ? "−" : "") + Math.abs(p).toLocaleString("de-DE", { maximumFractionDigits: d }) + " %";
+function anaForecastHtml(A, compact){
+  const g = goalSec(state.settings && state.settings.goal);
+  let h = "";
+  if (A.fc){
+    const diff = g ? A.fc.mid - g : 0;
+    h += `<div class="an-big"><span class="num">${fmtHM(A.fc.lo)}–${fmtHM(A.fc.hi)}</span><small>h</small></div>
+      <div class="fc-meta">Grundlage: ${A.fc.basis}${g ? ` · Ziel ${fmtHM(g)} · ${Math.abs(diff) < 5*60 ? "im Bereich" : diff > 0 ? fmtMin(diff) + " langsamer als dein Ziel" : fmtMin(-diff) + " schneller als dein Ziel"}` : ""}</div>`;
+  } else h += `<p class="note">Noch keine Prognose. Sie erscheint, sobald du 3 Wochen mit mindestens 6 Läufen eingetragen hast oder einen Wettkampf ab 5 km.</p>`;
+  if (A.race){
+    const r = A.race, a = r.s.actual;
+    h += `<div class="fc-row"><span class="fc-dot" style="background:var(--t-race)"></span><div class="fc-body">
+      <div class="fc-t">${esc(r.s.title || "Wettkampf")}<span class="fc-lv">${fmtDM(parse(r.s.date))}</span></div>
+      <div class="fc-x">${fmtKm(a.km)} km in ${fmtTime(a.sec)}. Hochgerechnet ${fmtHMS(r.est)}${r.adj ? ` (inkl. ${r.adj > 0 ? "+" : "−"}${Math.abs(r.adj/60)} min für deinen Wochenumfang)` : ""}. Die alte Riegel-Formel ergäbe ${fmtHMS(r.opt)}, für Freizeitläufer meist zu optimistisch.</div></div></div>`;
+  }
+  if (A.eqAct) h += `<div class="fc-row"><span class="fc-dot" style="background:var(--accent)"></span><div class="fc-body"><div class="fc-t">Aus deinem Training<span class="fc-lv">${fmtMinHM(A.eqAct.lo)}–${fmtMinHM(A.eqAct.hi)}</span></div>
+    <div class="fc-x">So schnell laufen Marathonläufer mit vergleichbarem Training typischerweise.</div></div></div>`;
+  const sp = list().filter(s => isRace(s) && s.actual && s.actual.half).sort(byDate).pop(), so = sp && splitOf(sp);
+  if (so) h += `<div class="fc-row fc-${so.level}"><span class="fc-dot"></span><div class="fc-body"><div class="fc-t">Renneinteilung · ${esc(sp.title || "Wettkampf")}<span class="fc-lv">2. Hälfte ${pctStr(so.pct, 1)}</span></div>
+    <div class="fc-x">${fmtTime(so.first)} / ${fmtTime(so.second)}. ${so.pct <= 3 ? "Gleichmäßig eingeteilt." : so.pct <= REF.split.men ? "Im üblichen Rahmen." : "Deutlich langsamer geworden: beim nächsten Mal ruhiger anlaufen."} Zum Vergleich Berlin 1999–2025: Männer im Mittel −${decStr(REF.split.men)} %, Frauen −${decStr(REF.split.women)} % Tempo.</div></div></div>`;
+  if (!compact) h += `<p class="note fc-foot">Unschärfe ±15–20 min: Auch die besten Modelle liegen bei Freizeitläufern im Mittel um eine Viertelstunde daneben. Am verlässlichsten wird die Prognose mit einem Halbmarathon.</p>`;
+  return h;
+}
+
+function readinessRows(A){
+  const R = REF.ready, ph = phaseInfo(), far = !ph || ph.weeks > 8, m = A.act, p = A.plan;
+  const rows = [];
+  const add = (title, level, now, planTxt, goal, short) => rows.push({ title, level, now, planTxt, goal, short });
+  const lv = (v, good, min) => v >= good ? "ok" : (far ? "open" : v >= min ? "warn" : "bad");
+  if (m){
+    add("Längster Lauf", lv(m.longest, R.longGood, R.longMin), `${fmtKm(m.longest)} km`, p ? `Plan: ${fmtKm(p.longest)} km` : "", `mind. ${R.longMin} km, besser ${R.longGood}–32 km`, "Lang");
+    add("Wochenumfang", m.kmWeek >= R.kmGood ? "ok" : m.kmWeek >= R.kmMin ? (far ? "open" : "warn") : (far ? "open" : "bad"), `Ø ${fmtKm(m.kmWeek)} km`, p ? `Plan: Ø ${fmtKm(p.kmWeek)} km` : "", `Ø ab ${R.kmGood} km; unter ${R.kmMin} km doppeltes Verletzungsrisiko`, "km");
+    add("Ø Laufdistanz", lv(m.avgRun, R.avgRun, R.avgRunMin), `${fmtKm(m.avgRun)} km`, p ? `Plan: ${fmtKm(p.avgRun)} km` : "", `ab ${R.avgRun} km pro Lauf`, "Ø Lauf");
+    add("Qualitätseinheiten", m.q >= R.q ? "ok" : m.q >= R.q / 2 ? "warn" : "bad", `${fmtKm(m.q)} pro Woche`, p ? `Plan: ${fmtKm(p.q)}` : "", "1–2 pro Woche", "Qualität");
+  }
+  // Tapering: Rennwoche (ohne Rennen) und Woche davor gegenüber der Spitzenwoche
+  const rd = state.settings && state.settings.raceDate;
+  if (rd){
+    const rw = sow(parse(rd)), wkKm = s0 => inRange(iso(s0), iso(addDays(s0, 6))).filter(s => RUN(s) && !isRace(s) && !(s.skipped && !s.actual)).reduce((n, s) => n + (s.actual ? +s.actual.km || 0 : +s.planKm || 0), 0);
+    let peak = 0; for (let i = 3; i <= 10; i++) peak = Math.max(peak, wkKm(addDays(rw, -7 * i)));
+    const taper = (wkKm(addDays(rw, -7)) + wkKm(rw)) / 2, red = peak ? (1 - taper / peak) * 100 : 0;
+    if (peak) add("Tapering", red >= R.taperLo && red <= R.taperHi + 5 ? "ok" : red >= 25 ? "warn" : "bad", pctStr(-red), `Spitze ${fmtKm(peak)} km → Ø ${fmtKm(taper)} km`, `letzte 2 Wochen ${R.taperLo}–${R.taperHi} % unter der Spitzenwoche`, "Taper");
+  }
+  return rows;
+}
+function segbarHtml(rows){
+  return `<div class="segbar" role="img" aria-label="${rows.filter(r => r.level === "ok").length} von ${rows.length} Richtwerten erreicht">${rows.map(r => `<i class="${r.level}"></i>`).join("")}</div>
+    <div class="seglab">${rows.map(r => `<span>${r.short}</span>`).join("")}</div>`;
+}
+function anaReadyHtml(A, compact){
+  const rows = readinessRows(A);
+  const lab = { ok:"Im Ziel", warn:"Knapp", bad:"Zu wenig", open:"Noch Zeit" };
+  let h = rows.length ? segbarHtml(rows) + `<div class="fc-list">${rows.map(r => `<div class="fc-row fc-${r.level}"><span class="fc-dot"></span><div class="fc-body">
+    <div class="fc-t">${r.title}<span class="fc-lv">${lab[r.level]}</span></div>
+    <div class="fc-x"><span class="num">${r.now}</span>${r.planTxt ? ` · ${r.planTxt}` : ""}</div>${compact ? "" : `<div class="fc-goal">Ziel: ${r.goal}</div>`}</div></div>`).join("")}</div>`
+    : `<p class="note">Sobald Läufe eingetragen sind, siehst du hier, wie nah du an den Richtwerten für den Renntag bist.</p>`;
+  // Belastungssprünge in den nächsten 6 Wochen
+  const ups = upcomingSpikes(42);
+  h += `<div class="an-h">Sprünge beim längsten Lauf · nächste 6 Wochen</div>`;
+  h += ups.length ? `<div class="fc-list">${ups.slice(0, compact ? 4 : 8).map(({ s, sp }) => `<div class="fc-row fc-${sp.level}"><span class="fc-dot"></span><div class="fc-body">
+      <div class="fc-t">${WD[(parse(s.date).getDay()+6)%7]} ${fmtDM(parse(s.date))} · ${fmtKm(sp.km)} km<span class="fc-lv">${pctStr(sp.pct)}</span></div>
+      <div class="fc-x">Längster Lauf der 30 Tage davor: ${fmtKm(sp.base)} km.</div></div></div>`).join("")}</div>`
+    : `<p class="note">Keine geplanten Läufe mehr als ${REF.spike.warn} % über dem längsten Lauf der 30 Tage davor.</p>`;
+  if (!compact) h += `<p class="note fc-foot">Richtwerte aus Studien mit 997 bzw. 5.200 Freizeitläufern und 92 Trainingsplänen. „Noch Zeit“: bis 8 Wochen vor dem Rennen wird nichts rot. Sprünge: Ein einzelner Lauf, der mehr als 10 % über dem längsten der letzten 30 Tage liegt, ging mit deutlich mehr Überlastungsverletzungen einher.</p>`;
+  return h;
+}
+
+
+/* ---------- Formzeit: Verlauf, Einzelfaktoren ---------- */
+// Erste Woche des Plans (frühester Lauf, geplant oder gelaufen)
+function planStart(){
+  const d = list().filter(s => RUN(s)).map(s => s.date).sort()[0];
+  return d ? sow(parse(d)) : null;
+}
+// Formzeit je Woche: gelaufen bis heute, Plan bis zur Rennwoche
+function formzeitSeries(){
+  const s0 = planStart(), rd = state.settings && state.settings.raceDate;
+  if (!s0) return { act: [], plan: [], start: null, end: null };
+  const cur = sow(today()), endW = rd ? sow(parse(rd)) : addDays(cur, 7 * 8);
+  const act = [], plan = [];
+  for (let ref = addDays(s0, 7); ref <= cur; ref = addDays(ref, 7)){
+    const f = analysis(ref).fc; if (f) act.push({ d: ref, v: f.mid });
+  }
+  for (let ref = addDays(s0, 7); ref <= endW; ref = addDays(ref, 7)){
+    const from = addDays(ref, -7 * REF.weeks), m = trainMetrics(iso(from < s0 ? s0 : from), iso(addDays(ref, -1)), "plan");
+    if (m.weeks >= 3 && m.runs >= 6) plan.push({ d: ref, v: equivalent(m).mid * 60 });
+  }
+  return { act, plan, start: s0, end: endW };
+}
+function formzeitChart(S, compact){
+  const g = goalSec(state.settings && state.settings.goal), pts = S.act.concat(S.plan);
+  if (!pts.length) return "";
+  const W = compact ? 320 : 560, H = compact ? 150 : 190, L = 30, R = 6, T = 8, B = 20;
+  const vals = pts.map(p => p.v).concat(g ? [g] : []);
+  const lo = Math.floor((Math.min(...vals) - 5*60) / 900) * 900, hi = Math.ceil((Math.max(...vals) + 5*60) / 900) * 900;
+  const t0 = +S.start, t1 = Math.max(+S.end, +addDays(S.start, 28));
+  const x = d => L + (+d - t0) / (t1 - t0) * (W - L - R), y = v => T + (v - lo) / (hi - lo) * (H - T - B);
+  const step = (hi - lo) / 900 > 6 ? 1800 : 900;
+  let s = `<svg class="fz-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Formzeit-Verlauf: gelaufen, laut Plan und Ziel">`;
+  for (let v = lo; v <= hi; v += step) s += `<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line-soft)"/><text x="${L-5}" y="${y(v)+3.5}" text-anchor="end" font-size="10" fill="var(--muted)">${fmtHM(v)}</text>`;
+  if (g) s += `<rect x="${L}" y="${y(g) - 4}" width="${W-L-R}" height="8" fill="var(--bib)" opacity=".18"/><text x="${W-R}" y="${y(g) - 7}" text-anchor="end" font-size="10" fill="var(--bib)">Ziel ${fmtHM(g)}</text>`;
+  // Monate an der x-Achse
+  const months = []; for (let d = new Date(S.start.getFullYear(), S.start.getMonth() + 1, 1); +d <= t1; d = new Date(d.getFullYear(), d.getMonth() + 1, 1)) months.push(d);
+  const every = months.length > (compact ? 6 : 10) ? 2 : 1;
+  months.forEach((d, i) => { if (i % every === 0) s += `<text x="${x(d)}" y="${H-5}" text-anchor="middle" font-size="10" fill="var(--muted)">${MONTHS[d.getMonth()].slice(0,3)}</text>`; });
+  const line = a => a.map(p => `${x(p.d).toFixed(1)},${y(p.v).toFixed(1)}`).join(" ");
+  if (S.plan.length > 1) s += `<polyline fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 4" points="${line(S.plan)}"/>`;
+  if (S.act.length > 1) s += `<polyline fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="${line(S.act)}"/>`;
+  const last = S.act[S.act.length - 1];
+  if (last) s += `<circle cx="${x(last.d)}" cy="${y(last.v)}" r="4" fill="var(--accent)"/>`;
+  const tx = x(today()); if (tx > L && tx < W - R) s += `<line x1="${tx}" x2="${tx}" y1="${T}" y2="${H-B}" stroke="var(--line)" stroke-dasharray="1 3"/>`;
+  return s + `</svg><div class="legend"><span><i class="sw" style="background:var(--accent)"></i>gelaufen</span><span><i class="sw" style="border:1px dashed var(--muted)"></i>laut Plan</span>${g ? `<span><i class="sw" style="background:var(--bib);opacity:.5"></i>Ziel</span>` : ""}</div>`;
+}
+function anaFormzeitHtml(A, compact){
+  const g = goalSec(state.settings && state.settings.goal), S = formzeitSeries();
+  let h = "";
+  if (A.fc){
+    const half = Math.round((A.fc.hi - A.fc.lo) / 120);
+    h += `<div class="an-big"><span class="num">${fmtHM(A.fc.mid)}</span><small>± ${half} min${g ? " · Ziel " + fmtHM(g) : ""}</small></div>`;
+    const prev = S.act.length > 4 ? S.act[S.act.length - 5] : null, nowPlan = S.plan.find(p => +p.d === +sow(today()));
+    const parts = [];
+    if (prev){ const d = Math.round((A.fc.mid - prev.v) / 60);
+      parts.push(d <= -1 ? `<span class="fz-up">${-d} min schneller als vor 4 Wochen</span>` : d >= 1 ? `<span class="fz-down">${d} min langsamer als vor 4 Wochen</span>` : "Unverändert seit 4 Wochen"); }
+    if (nowPlan) parts.push(`laut Plan jetzt ${fmtHM(nowPlan.v)}`);
+    if (parts.length) h += `<div class="fz-chg">${parts.join(" · ")}</div>`;
+  } else h += `<p class="note">Deine Formzeit erscheint, sobald du 3 Wochen mit mindestens 6 Läufen eingetragen hast oder einen Wettkampf ab 5 km. Bis dahin siehst du die Linie deines Plans.</p>`;
+  h += formzeitChart(S, compact);
+  // Warnungen werden nie verrechnet, sie stehen immer für sich
+  upcomingSpikes(14).slice(0, 2).forEach(({ s, sp }) => {
+    h += `<div class="fz-warn fc-${sp.level}"><b>${WD[(parse(s.date).getDay()+6)%7]} ${fmtDM(parse(s.date))} · ${fmtKm(sp.km)} km  ${pctStr(sp.pct)}</b><span>Längster Lauf der 30 Tage davor: ${fmtKm(sp.base)} km</span></div>`;
+  });
+  const f = formcheck(), rows = readinessRows(A), F = fitnessTrend();
+  h += `<div class="fz-minis">
+    <div><span>Plantreue</span><b class="num">${f.verdict.level !== "na" && f.score !== null ? f.score + " %" : "–"}</b></div>
+    <div><span>Bereit</span><b class="num">${rows.length ? rows.filter(r => r.level === "ok").length + " / " + rows.length : "–"}</b></div>
+    <div><span>Puls-Fitness</span><b class="num ${F.change === null ? "" : F.change >= 1 ? "fz-up" : F.change <= -3 ? "fz-down" : ""}">${F.change === null ? "–" : pctStr(F.change, 1)}</b></div></div>`;
+  if (!compact) h += `<p class="note fc-foot">Formzeit: die Marathonzeit, die zu deinem Training der letzten 12 Wochen und deinen Wettkämpfen passt${A.fc ? " (Grundlage: " + A.fc.basis + ")" : ""}. Die gestrichelte Linie zeigt dieselbe Rechnung mit deinen Planwerten. Warnungen fließen bewusst nicht ein.</p>`;
+  return h;
+}
+// Typischer Wert einer Kennzahl für eine Zielzeit (Umkehrung von bandTime)
+function bandValue(key, min){
+  const b = REF.bands;
+  if (min <= b[0].min) return b[0][key];
+  for (let i = 0; i < b.length - 1; i++) if (min <= b[i+1].min) return b[i][key] + (min - b[i].min) / (b[i+1].min - b[i].min) * (b[i+1][key] - b[i][key]);
+  return b[b.length-1][key];
+}
+function anaFactorsHtml(A, compact){
+  const g = goalSec(state.settings && state.settings.goal), gm = g ? g / 60 : (A.eqPlan ? A.eqPlan.mid : 240);
+  if (!A.eqAct) return `<p class="note">${A.act && A.act.runs ? `Bisher ${A.act.runs} Läufe in ${Math.round(A.act.weeks)} ${Math.round(A.act.weeks) === 1 ? "Woche" : "Wochen"} eingetragen. ` : ""}Die Einzelfaktoren erscheinen nach 3 Wochen mit mindestens 6 Läufen.</p>`;
+  const F = { km:{ f: v => fmtKm(v) + " km", u:"" }, days:{ f: v => fmtKm(v), u:" pro Woche" }, easy:{ f: v => Math.round(v) + " %", u:"" }, q:{ f: v => fmtKm(v), u:" pro Woche" } };
+  const planV = { km: A.plan && A.plan.kmWeek, days: A.plan && A.plan.days, easy: A.plan && A.plan.easy, q: A.plan && A.plan.q };
+  const sumW = A.eqAct.parts.reduce((n, p) => n + p.w, 0);
+  const parts = A.eqAct.parts.map(p => { const target = bandValue(p.key, gm); return { ...p, target, ok: p.val >= target * 0.97, gain: Math.max(0, p.w * (p.min - gm) / sumW) }; });
+  const lever = parts.filter(p => !p.ok && p.gain >= 1).sort((a, b) => b.gain - a.gain)[0];
+  let h = `<div class="fac-head">Letzte 12 Wochen · <i class="fac-mk"></i> typisch für ${fmtMinHM(gm)}${g ? "" : " (Plan)"}</div>`;
+  h += parts.map(p => {
+    const max = p.key === "easy" ? 100 : Math.max(p.val, p.target) * 1.25;
+    const sub = p.ok ? "Erfüllt" : p === lever ? "Größter Hebel" : "";
+    const pl = planV[p.key] ? `Plan vor dem Rennen: ${F[p.key].f(planV[p.key])}` : "";
+    return `<div class="fac ${p.ok ? "ok" : ""}"><div class="fac-t"><span>${p.label}</span><span><b class="num">${F[p.key].f(p.val)}</b> <small class="num">/ ${F[p.key].f(p.target)}${F[p.key].u}</small></span></div>
+      <div class="fac-bar"><i style="width:${Math.min(100, p.val / max * 100).toFixed(1)}%"></i><u style="left:${Math.min(100, p.target / max * 100).toFixed(1)}%"></u></div>
+      ${sub || pl ? `<div class="fac-s">${[sub, compact && sub ? "" : pl].filter(Boolean).join(" · ")}</div>` : ""}</div>`;
+  }).join("");
+  if (lever) h += `<div class="fac-lever">Größter Hebel: ${lever.label} auf ${F[lever.key].f(lever.target)}${F[lever.key].u} bringen. Laut Vergleichsdaten etwa ${Math.round(lever.gain)} min schneller.</div>`;
+  if (!compact) h += `<p class="note fc-foot">Balken: dein Wert. Strich: was Marathonläufer mit ${fmtMinHM(gm)} typischerweise trainieren. Vergleichswerte aus 119.000 Strava-Marathons, einer Boston-Kohorte und 92 Trainingsplänen. Gruppenmittel, keine Garantie.</p>`;
+  return h;
+}
+
+function anaFitHtml(compact){
+  const F = fitnessTrend(), hrSet = +(state.settings && state.settings.easyHrMax) || 0;
+  if (F.pts.length < 3) return `<p class="note">Trag bei lockeren Läufen (ab 3 km) deinen Ø Puls ein. Ab 3 Läufen siehst du hier, ob du bei gleichem Puls schneller wirst.</p>`;
+  const W = 320, H = 110, P = 8, vs = F.pts.map(p => p.v), lo = Math.min(...vs) * 0.97, hi = Math.max(...vs) * 1.03;
+  const t0 = parse(F.pts[0].date), t1 = Math.max(1, (parse(F.pts[F.pts.length-1].date) - t0) / 864e5);
+  const x = p => P + (parse(p.date) - t0) / 864e5 / t1 * (W - 2*P), y = v => P + (1 - (v - lo) / (hi - lo || 1)) * (H - 2*P);
+  // gleitender Mittelwert über 4 Wochen
+  const avg = F.pts.map(p => { const f = iso(addDays(parse(p.date), -27)); const a = F.pts.filter(q => q.date >= f && q.date <= p.date); return { date:p.date, v: a.reduce((n, q) => n + q.v, 0) / a.length }; });
+  const svg = `<svg viewBox="0 0 ${W} ${H}" class="an-spark" role="img" aria-label="Meter pro Herzschlag bei lockeren Läufen">
+    ${F.pts.map(p => `<circle cx="${x(p).toFixed(1)}" cy="${y(p.v).toFixed(1)}" r="2.6" fill="var(--t-easy)" opacity=".55"/>`).join("")}
+    <polyline fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" points="${avg.map(p => `${x(p).toFixed(1)},${y(p.v).toFixed(1)}`).join(" ")}"/></svg>`;
+  const c = F.change, lvl = c === null ? "" : c >= 1 ? "fc-ok" : c <= -3 ? "fc-bad" : "fc-warn";
+  return `<div class="an-big ${lvl}"><span class="num">${F.now.toLocaleString("de-DE", { maximumFractionDigits: 2, minimumFractionDigits: 2 })}</span><small>m pro Herzschlag</small></div>
+    <div class="fc-meta">${c === null ? "Trend ab 2 Läufen in beiden 4-Wochen-Abschnitten" : `${pctStr(c, 1)} gegenüber den 4 Wochen davor · ${c >= 1 ? "Du wirst bei gleichem Puls schneller." : c <= -3 ? "Gerade weniger effizient: Müdigkeit, Hitze oder Krankheit?" : "Stabil."}`}</div>
+    ${svg}<div class="legend"><span><i class="sw" style="background:var(--t-easy);opacity:.6"></i>einzelner Lauf</span><span><i class="sw" style="background:var(--accent)"></i>Ø 4 Wochen</span></div>
+    ${compact ? "" : `<p class="note fc-foot">Nur lockere Läufe mit Pulsangabe, ${F.pts.length} Werte aus 16 Wochen. Hitze, Wind und Hügel drücken den Wert, achte auf den Trend, nicht auf einzelne Läufe.${hrSet ? "" : " Tipp: Mit einer Puls-Obergrenze unter Wettkampf & Ziele prüft die App auch, ob die lockeren Läufe locker waren."}</p>`}`;
 }
 
 /* Rückmeldung nach dem Speichern */

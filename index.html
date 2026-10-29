@@ -378,6 +378,12 @@ body.dragging{-webkit-user-select:none;user-select:none}
 .dlg .rpechips button{aspect-ratio:auto;border-radius:8px;padding:7px 0}
 .moredet summary{cursor:pointer;font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);list-style:none}
 .moredet summary::-webkit-details-marker{display:none}
+.moredet summary em{font-style:normal;font-weight:400;letter-spacing:.02em;text-transform:none;color:var(--muted);margin-left:8px}
+.row.three{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.nonrun .row.three{grid-template-columns:1fr}
+.feel.tags button{font-size:11.5px;padding:5px 11px}
+.feel.tags button[aria-pressed="true"]{border-color:var(--warn);color:var(--warn)}
+.res .tagres{color:var(--warn)}
 .moredet summary::before{content:"+ "}
 .moredet[open] summary::before{content:"– "}
 .moreinner{display:grid;gap:12px;margin-top:12px}
@@ -430,7 +436,7 @@ body.dragging .wpill:not(.drop){border-color:var(--line)}
 .palette button{aspect-ratio:1;border-radius:50%;border:2px solid transparent;background:var(--c);padding:0}
 .palette button[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 3px var(--surface)}
 .backlink{justify-self:start}
-.looks{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.looks{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 .look{border:1.5px solid var(--line);background:none;border-radius:12px;padding:6px 6px 9px;display:grid;gap:7px;color:var(--ink)}
 .look[aria-pressed="true"]{border-color:var(--accent)}
 .lprev{height:76px;border-radius:8px;position:relative;display:block;overflow:hidden}
@@ -727,6 +733,91 @@ form:not(.israce) .raceonly{display:none!important}
 .mslide.tighter .fz-chart,.mslide.tighter .an-spark{max-height:120px}
 .mslide.tighter .fc-row{padding:4px 0}
 .mslide.tighter .seglab{display:none}
+
+/* =====================================================================
+   Layout „Minimalist“: hell, eine Akzentfarbe, klar abgegrenzte Kästen.
+   Nebensachen sind eingeklappt (Knöpfe .mtoggle / [data-more]).
+   ===================================================================== */
+:root[data-look="minimal"]{
+  --bg:#F2F2EF; --surface:#FFFFFF; --sunken:#E9E9E5; --line:#D9D9D4; --line-soft:#E7E7E3;
+  --ink:#18181A; --muted:#76767A; --accent:#2F5BEA; --accent-ink:#FFFFFF; --bib:#18181A; --bib-ink:#FFFFFF;
+  --violet:#18181A; --hero:#F2F2EF; --hero-2:#F2F2EF; --hero-fg:#18181A; --hero-muted:#76767A;
+  --ok:#2E9B68; --warn:#D2553C;
+  --t-easy:#A9A9A4; --t-long:#86867F; --t-tempo:#5F5F5B; --t-interval:#3F3F3C; --t-recovery:#C2C2BD;
+  --t-strength:#A9A9A4; --t-boulder:#A9A9A4; --t-cross:#A9A9A4; --t-race:#18181A; --t-rest:#D0D0CB;
+  --r:14px; color-scheme:light;
+}
+:root[data-look="minimal"] .chip,
+:root[data-look="minimal"] .mstats span,
+:root[data-look="minimal"] .stat .k{color:var(--muted)}
+/* Karten: weißer Kasten, Art als kleiner Punkt, nur km sichtbar */
+:root[data-look="minimal"] .card{background:var(--surface);border:1px solid var(--line);box-shadow:0 1px 2px rgba(0,0,0,.04)}
+:root[data-look="minimal"] .card::before{left:14px;top:17px;bottom:auto;width:7px;height:7px;border-radius:50%}
+:root[data-look="minimal"] .card .open,
+:root[data-look="minimal"] .mbody .card .open{padding-left:30px}
+:root[data-look="minimal"] .card .kv > span:not(.km):not(.spike){display:none}
+:root[data-look="minimal"] .res > span:nth-child(n+3):not(.tagres){display:none}
+:root[data-look="minimal"] .card.rest{background:transparent;box-shadow:none}
+/* Handy-Rahmen */
+:root[data-look="minimal"] .mhead{border-bottom:1px solid var(--line)}
+:root[data-look="minimal"] .mtabs{background:var(--surface);margin:0 calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+:root[data-look="minimal"] .mtabs .mfab{box-shadow:0 0 0 6px var(--surface)}
+/* Heute */
+:root[data-look="minimal"] .mrings{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px 8px}
+:root[data-look="minimal"] .count{border-width:2px;border-color:var(--ink)}
+:root[data-look="minimal"] .mfc,
+:root[data-look="minimal"] .mnotice,
+:root[data-look="minimal"] .mgoal{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+:root[data-look="minimal"] .mpath{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.mtoggle{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;color:var(--ink);font-size:13px;text-align:left}
+.mtoggle small{color:var(--muted);font-size:12px;margin-left:auto}
+.mtoggle::after{content:"›";color:var(--muted);font-size:18px;font-weight:300;transition:transform .15s}
+.mtoggle[aria-expanded="true"]::after{transform:rotate(90deg)}
+.mtoggle.sm{padding:8px 12px;font-size:12px;border-radius:12px}
+/* Woche, Monat */
+:root[data-look="minimal"] .wpill{background:var(--surface);border-color:var(--line-soft)}
+:root[data-look="minimal"] .wpill.sel{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--surface))}
+:root[data-look="minimal"] .wsum{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 14px}
+:root[data-look="minimal"] .dayhead{border-top:0;padding-top:2px}
+:root[data-look="minimal"] .mcal{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px 6px}
+:root[data-look="minimal"] .mstats{border-top:0;gap:8px}
+:root[data-look="minimal"] .mstats > div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 12px}
+/* Analyse: jede Seite ein Kasten, Details eingeklappt */
+:root[data-look="minimal"] .mslide{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px}
+:root[data-look="minimal"] .mslide:not(.open) [data-fit],
+:root[data-look="minimal"] .mslide:not(.open) .fc-list,
+:root[data-look="minimal"] .mslide:not(.open) .legend{display:none!important}
+:root[data-look="minimal"] .mslide h3{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.mslide h3 .mtoggle{width:auto;flex:none;font-family:var(--f-body);font-style:normal;font-weight:700;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);padding:6px 10px;gap:6px}
+/* Dialoge und Bedienelemente */
+:root[data-look="minimal"] dialog{background:var(--bg)}
+:root[data-look="minimal"] dialog::backdrop{background:rgba(20,20,22,.35)}
+:root[data-look="minimal"] .dlg:not(.slim) h3,
+:root[data-look="minimal"] .shead{border-bottom:1px solid var(--line)}
+:root[data-look="minimal"] input:not([type=checkbox]):not([type=range]):not([type=file]),
+:root[data-look="minimal"] select,
+:root[data-look="minimal"] textarea{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+:root[data-look="minimal"] input:focus,
+:root[data-look="minimal"] select:focus,
+:root[data-look="minimal"] textarea:focus{border-color:var(--accent)}
+:root[data-look="minimal"] .btn{border-radius:12px;background:var(--surface);border-color:var(--line)}
+:root[data-look="minimal"] .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+:root[data-look="minimal"] .feel button,
+:root[data-look="minimal"] .rpechips button{background:var(--surface);border-color:var(--line);border-radius:10px}
+:root[data-look="minimal"] .rpechips button{aspect-ratio:auto;padding:7px 0}
+:root[data-look="minimal"] .feel button[aria-pressed="true"],
+:root[data-look="minimal"] .rpechips button[aria-pressed="true"]{background:color-mix(in srgb,var(--accent) 10%,var(--surface));border-color:var(--accent)}
+:root[data-look="minimal"] .feel.tags button[aria-pressed="true"]{background:color-mix(in srgb,var(--warn) 10%,var(--surface));border-color:var(--warn)}
+:root[data-look="minimal"] .moredet{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:11px 12px}
+:root[data-look="minimal"] .mrow{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:13px 14px;margin-bottom:8px}
+:root[data-look="minimal"] .colrow{border-bottom-color:var(--line)}
+/* Web */
+:root[data-look="minimal"] .hero{border-bottom:1px solid var(--line)}
+:root[data-look="minimal"] .summary{border:0;gap:10px;padding-block:0}
+:root[data-look="minimal"] .stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px}
+:root[data-look="minimal"] .panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px}
+:root[data-look="minimal"] .day{border-top:1px solid var(--line)}
+:root[data-look="minimal"] .day.today{border-top:2px solid var(--accent)}
 </style>
 </head>
 <body>
@@ -831,22 +922,24 @@ form:not(.israce) .raceonly{display:none!important}
     <div class="logbox">
       <label class="toggle"><input type="checkbox" id="f_done"> Absolviert</label>
       <div id="logFields" class="logfields" hidden>
-        <div class="row">
+        <div class="row three">
           <label class="runonly">Distanz (km)<input type="text" id="f_km" inputmode="decimal" data-dec autocomplete="off" placeholder="10,25"></label>
           <label><span id="timeLbl">Zeit</span><input type="text" id="f_time" placeholder="0:52:30" inputmode="numeric" data-mask="hms" autocomplete="off"></label>
+          <label class="runonly">Ø Puls<input type="number" id="f_hr" min="40" max="230" inputmode="numeric" placeholder="142"></label>
         </div>
         <div class="row raceonly"><label>Halbzeit (h:mm:ss)<input type="text" id="f_half" placeholder="1:58:00" inputmode="numeric" data-mask="hms" autocomplete="off"></label></div>
         <div class="pacebox runonly">Pace <b id="paceOut">–</b><span id="paceCmp"></span></div>
-        <div class="sublbl">Anstrengung</div>
-        <div class="rpechips" id="rpeChips"></div>
-        <input type="hidden" id="f_rpe" value=""><output id="rpeOut" hidden></output>
-        <div class="sublbl">Gefühl</div>
-        <div class="feel" id="feel"></div>
         <details class="moredet" id="moreDet">
-          <summary id="moreSum">Puls &amp; Notiz</summary>
+          <summary><span>Anstrengung, Gefühl &amp; Notiz</span><em id="moreSum"></em></summary>
           <div class="moreinner">
-            <label class="runonly">Ø Puls<input type="number" id="f_hr" min="40" max="230" inputmode="numeric"></label>
-            <label>Notiz<textarea id="f_notes" rows="2" placeholder="Wetter, Schuhe, Beine …"></textarea></label>
+            <div class="sublbl">Anstrengung</div>
+            <div class="rpechips" id="rpeChips"></div>
+            <input type="hidden" id="f_rpe" value=""><output id="rpeOut" hidden></output>
+            <div class="sublbl">Gefühl</div>
+            <div class="feel" id="feel"></div>
+            <div class="sublbl">Notiz</div>
+            <div class="feel tags" id="tags"></div>
+            <textarea id="f_notes" rows="2" placeholder="Wetter, Schuhe, Beine …" aria-label="Notiz"></textarea>
           </div>
         </details>
       </div>
@@ -949,7 +1042,7 @@ const planMinutes = s => (s.planZone && zonePace(s.planZone) && s.planKm) ? Math
 
 const state = { sessions:new Map(), templates:[], settings:{}, view:"week", anchor:today(), mode:"loading" };
 const PHONE = matchMedia("(max-width:640px)");
-const M = { tab:"today", day:today(), month:new Date(today().getFullYear(), today().getMonth(), 1), half:today(), slide:0 };
+const M = { open:{}, tab:"today", day:today(), month:new Date(today().getFullYear(), today().getMonth(), 1), half:today(), slide:0 };
 
 /* ---------- Speicher: zuerst auf dem Gerät, dann Abgleich mit Supabase ---------- */
 const CFG = window.TP_CONFIG || {};
@@ -1244,13 +1337,13 @@ const CHECK_SVG = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" st
 function cardHtml(s){
   const st = status(s), tc = `var(--t-${s.type||"easy"})`;
   const pp = planPace(s), pm = planMinutes(s), zoned = s.planZone && zonePace(s.planZone);
-  const plan = [s.planKm?`<span>${fmtKm(s.planKm)} km</span>`:"", pm?`<span>${zoned?"~":""}${pm} min</span>`:"",
+  const plan = [s.planKm?`<span class="km">${fmtKm(s.planKm)} km</span>`:"", pm?`<span>${zoned?"~":""}${pm} min</span>`:"",
     pp && !NONRUN.has(s.type)?`<span class="pace">${fmtPaceSec(pp)} /km</span>`:"",
     zoned?`<span class="zone" style="--tc:var(--t-${ZONES[s.planZone].tc})">${ZONES[s.planZone].short}</span>`:"",
     (() => { const sp = !s.actual && !s.skipped && s.date >= iso(today()) ? spikeOf(s) : null;
       return sp && sp.level !== "ok" ? `<span class="spike fc-${sp.level}" title="${fmtKm(sp.km)} km, längster Lauf der 30 Tage davor ${fmtKm(sp.base)} km">▲ ${pctStr(sp.pct)}</span>` : ""; })()].join("");
   const a = s.actual, skip = st === "skipped";
-  const res = skip ? `<span>Ausgefallen${s.skipped.reason && PAUSE_REASONS[s.skipped.reason] ? " · " + PAUSE_REASONS[s.skipped.reason] : ""}</span>` : a ? [a.km?`<span>${fmtKm(a.km)} km</span>`:"", a.sec?`<span>${NONRUN.has(s.type) ? fmtMin(a.sec) : fmtTime(a.sec)}</span>`:"", a.km&&a.sec?`<span>${fmtPace(a.sec,a.km)}</span>`:"", a.hr?`<span>♥ ${a.hr}</span>`:"", a.feel?`<span>${FEELS[a.feel-1]}</span>`:""].join("") : "";
+  const res = skip ? `<span>Ausgefallen${s.skipped.reason && PAUSE_REASONS[s.skipped.reason] ? " · " + PAUSE_REASONS[s.skipped.reason] : ""}</span>` : a ? [a.km?`<span>${fmtKm(a.km)} km</span>`:"", a.sec?`<span>${NONRUN.has(s.type) ? fmtMin(a.sec) : fmtTime(a.sec)}</span>`:"", a.km&&a.sec?`<span>${fmtPace(a.sec,a.km)}</span>`:"", a.hr?`<span>♥ ${a.hr}</span>`:"", a.feel?`<span>${FEELS[a.feel-1]}</span>`:"", (a.tags||[]).length?`<span class="tagres">⚠ ${a.tags.map(t => TAG_SHORT[t]).filter(Boolean).join(", ")}</span>`:""].join("") : "";
   const check = st==="rest" || skip ? "" : st==="done"
     ? `<span class="check done" title="Absolviert" aria-label="Absolviert">${CHECK_SVG}</span>`
     : `<button class="check ${st==="missed"?"missed":""}" data-check="${esc(s.id)}" title="Wie geplant erledigt" aria-label="${esc(TYPES[s.type]?.label)} wie geplant erledigt">${CHECK_SVG}</button>`;
@@ -1542,11 +1635,11 @@ async function exportExcel(){
         "Plan Distanz (km)": s.planKm ?? "", "Plan Dauer (min)": planMinutes(s) ?? "", "Plan Zone": s.planZone && ZONES[s.planZone] ? ZONES[s.planZone].label : "", "Plan Pace (min/km)": pp ? fmtPaceSec(pp) : "",
         "Distanz (km)": a.km ?? "", "Zeit (h:mm:ss)": a.sec ? fmtTime(a.sec) : "", "Dauer (min)": a.sec ? Math.round(a.sec/6)/10 : "",
         "Pace (min/km)": a.km && a.sec ? fmtPaceSec(a.sec/a.km) : "", "Ø Puls": a.hr ?? "", "RPE": a.rpe ?? "",
-        "Gefühl": a.feel ? FEELS[a.feel-1] : "", "Notiz": a.notes || ""
+        "Gefühl": a.feel ? FEELS[a.feel-1] : "", "Beschwerden": (a.tags||[]).map(t => TAGS[t]).filter(Boolean).join(", "), "Notiz": a.notes || ""
       };
     });
     const ws = XLSX.utils.json_to_sheet(rows, {cellDates:true, dateNF:"dd.mm.yyyy"});
-    ws["!cols"] = [12,12,5,16,26,10,10,14,10,11,12,10,11,8,6,9,36].map(w => ({wch:w}));
+    ws["!cols"] = [12,12,5,16,26,10,10,14,10,11,12,10,11,8,6,9,22,36].map(w => ({wch:w}));
     ws["!autofilter"] = {ref: ws["!ref"]};
     // Wochenübersicht
     const wk = new Map();
@@ -1576,10 +1669,20 @@ let editing = null, feel = null, rpe = null, delArmed = false;
 $("f_type").innerHTML = Object.entries(TYPES).map(([k,v]) => `<option value="${k}">${v.label}</option>`).join("");
 $("feel").innerHTML = FEELS.map((f,i) => `<button type="button" data-f="${i+1}" aria-pressed="false">${f}</button>`).join("");
 $("feel").onclick = e => { const b = e.target.closest("button"); if(!b) return; feel = +b.dataset.f === feel ? null : +b.dataset.f; syncFeel(); };
-const syncFeel = () => $("feel").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.f===feel)));
+const syncFeel = () => { $("feel").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.f===feel))); syncMoreSum(); };
+// Beschwerden zum Antippen, gespeichert in actual.tags
+const TAGS = { knee:"Knieschmerzen", shin:"Schienbeinschmerzen", ankle:"Sprunggelenkschmerzen", tired:"Schlapp" };
+const TAG_SHORT = { knee:"Knie", shin:"Schienbein", ankle:"Sprunggelenk", tired:"Schlapp" };
+let tags = new Set();
+$("tags").innerHTML = Object.entries(TAGS).map(([k, v]) => `<button type="button" data-t="${k}" aria-pressed="false">${v}</button>`).join("");
+$("tags").onclick = e => { const b = e.target.closest("button"); if (!b) return; tags.has(b.dataset.t) ? tags.delete(b.dataset.t) : tags.add(b.dataset.t); syncTags(); };
+function syncTags(){ $("tags").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(tags.has(b.dataset.t)))); syncMoreSum(); }
+// Eingeklappt: gewählte Werte kurz neben der Überschrift
+function syncMoreSum(){ const el = $("moreSum"); if (!el) return;
+  el.textContent = [rpe ? "RPE " + rpe : "", feel ? FEELS[feel-1] : "", ...[...tags].map(t => TAG_SHORT[t])].filter(Boolean).join(" · "); }
 $("rpeChips").innerHTML = Array.from({length:10},(_,i) => `<button type="button" data-r="${i+1}" aria-pressed="false" aria-label="RPE ${i+1}">${i+1}</button>`).join("");
 $("rpeChips").onclick = e => { const b = e.target.closest("button"); if(!b) return; rpe = +b.dataset.r === rpe ? null : +b.dataset.r; syncRpe(); };
-function syncRpe(){ $("f_rpe").value = rpe ?? ""; $("rpeChips").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.r===rpe))); }
+function syncRpe(){ $("f_rpe").value = rpe ?? ""; $("rpeChips").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.r===rpe))); syncMoreSum(); }
 const isNonrun = () => NONRUN.has($("f_type").value);
 // Dauer bei Kraft/Bouldern: "90" = 90 min, "1:30" = 1 h 30 min
 const parseDur = s => { const p = String(s||"").trim().split(":").map(Number);
@@ -1629,7 +1732,6 @@ function applyKind(){
   $("timeLbl").textContent = nr ? "Dauer (h:mm)" : "Zeit (h:mm:ss)";
   $("f_time").placeholder = nr ? "1:30" : "0:52:30";
   $("f_time").dataset.mask = nr ? "hm" : "hms";
-  $("moreSum").textContent = nr ? "Notiz" : "Puls & Notiz";
 }
 $("f_zone").onchange = () => { zoneTouched = true; syncPlan(); };
 $("f_type").onchange = () => {
@@ -1692,7 +1794,8 @@ function openSession(id, date, logNow){
   rpe = a?.rpe ?? null; syncRpe();
   feel = a?.feel ?? null; syncFeel();
   $("f_notes").value = a?.notes || "";
-  $("moreDet").open = !!(a?.hr || a?.notes);
+  tags = new Set(a?.tags || []); syncTags();
+  $("moreDet").open = false;
   $("delBtn").hidden = !s; $("delBtn").textContent = "Löschen"; $("delBtn").classList.remove("armed");
   $("formErr").hidden = true;
   updatePace();
@@ -1751,7 +1854,7 @@ $("form").onsubmit = async e => {
     if (half && sec && half >= sec){ showErr("Die Halbzeit muss kleiner als die Endzeit sein."); return; }
     if (t && !sec){ showErr(nr ? "Dauer bitte in Minuten oder als h:mm eingeben, z. B. 90 oder 1:30." : "Zeit bitte als h:mm:ss oder mm:ss eingeben, z. B. 52:30."); return; }
     body.actual = { km: nr || $("f_km").value==="" ? null : kmv("f_km"), sec: sec || null,
-      hr: nr || $("f_hr").value==="" ? null : +$("f_hr").value, rpe, feel, notes: $("f_notes").value.trim(), half: half || null,
+      hr: nr || $("f_hr").value==="" ? null : +$("f_hr").value, rpe, feel, notes: $("f_notes").value.trim(), tags: [...tags], half: half || null,
       loggedAt: prev?.actual?.loggedAt || new Date().toISOString() };
   } else body.actual = null;
   $("saveBtn").disabled = true;
@@ -1858,8 +1961,9 @@ function mToday(){
       <div class="mring">${ringSvg(pct)}<span class="lbl">Diese Woche</span><span class="val num">${fmtKm(wt.doneKm)} <small>/ ${fmtKm(wt.planKm)} km</small></span></div></div>
     <div class="mfit" id="mFit">
       ${(() => { const f = formcheck(); return f.verdict.level === "na" ? "" : `<button class="mfc fc-${f.verdict.level} fitdrop" id="mFc"><b>${f.verdict.label}</b><span>${f.checks.filter(c => c.level !== "ok").map(c => c.title).join(" · ") || "Alle Ziele im grünen Bereich"}</span></button>`; })()}
-      ${missed.length ? `<div class="mnotice fitdrop"><span>${missed.length===1 ? "1 Einheit" : missed.length+" Einheiten"} der letzten Tage offen</span><span class="acts"><button class="mlink" id="mMissedSick" data-from="${missed[0].date}">Ausfall</button><button class="mlink" data-goto="${missed[0].date}">Ansehen</button></span></div>` : ""}
-      ${pathHtml()}
+      ${isMin() ? `<button class="mtoggle" data-tg="today" aria-expanded="${!!M.open.today}">Weg zum ${esc(st.raceName || "Rennen")}<small>${missed.length ? (missed.length === 1 ? "1 Einheit offen" : missed.length + " Einheiten offen") : ""}</small></button>` : ""}
+      ${isMin() && !M.open.today ? "" : `${missed.length ? `<div class="mnotice fitdrop"><span>${missed.length===1 ? "1 Einheit" : missed.length+" Einheiten"} der letzten Tage offen</span><span class="acts"><button class="mlink" id="mMissedSick" data-from="${missed[0].date}">Ausfall</button><button class="mlink" data-goto="${missed[0].date}">Ansehen</button></span></div>` : ""}
+      ${pathHtml()}`}
     </div>`;
   if ($("mRace")) $("mRace").onclick = openRace;
   if ($("mFc")) $("mFc").onclick = () => { M.tab = "half"; M.slide = 0; M.half = today(); render(); };
@@ -1940,10 +2044,11 @@ function mWeek(){
   const items = arr.filter(x => x.date===ds).sort(byDate);
   $("mBody").innerHTML = `
     <div class="wstrip">${strip}</div>
-    <div class="wsum"><span><b class="num">${fmtKm(wt.doneKm)}</b> / ${fmtKm(wt.planKm)} km</span><span class="num">${wt.doneCount} / ${wt.planCount} Einheiten</span><div class="meter"><i style="width:${pct}%"></i></div></div>
+    ${isMin() ? `<button class="mtoggle sm" data-tg="week" aria-expanded="${!!M.open.week}">Wochensumme<small>${wt.doneCount} / ${wt.planCount} Einheiten</small></button>` : ""}
+    <div class="wsum"${isMin() && !M.open.week ? " hidden" : ""}><span><b class="num">${fmtKm(wt.doneKm)}</b> / ${fmtKm(wt.planKm)} km</span><span class="num">${wt.doneCount} / ${wt.planCount} Einheiten</span><div class="meter"><i style="width:${pct}%"></i></div></div>
     <div class="dayhead"><h3>${WD_L[(d.getDay()+6)%7]}<small>${fmtDM(d)}</small></h3>${ds===ts ? '<span class="todaytag">Heute</span>' : ""}</div>
     <div class="mscroll" id="mWeekDay">${items.map(cardHtml).join("") || `<div class="mempty">Für diesen Tag ist nichts geplant.</div>`}<button class="add" data-add="${ds}">+ Einheit</button></div>
-    <div class="mhint">Wischen wechselt den Tag · Einheit gedrückt halten und auf einen Tag oben ziehen</div>`;
+    <div class="mhint"${isMin() && !M.open.week ? " hidden" : ""}>Wischen wechselt den Tag · Einheit gedrückt halten und auf einen Tag oben ziehen</div>`;
   $("mBody").querySelectorAll("[data-pick]").forEach(b => b.onclick = () => {
     const nd = parse(b.dataset.pick), dir = Math.sign(nd - M.day); if (!dir) return;
     M.day = nd; render(); slideIn(dir, "#mWeekDay");
@@ -1964,7 +2069,8 @@ function mMonth(){
   const T = totals(inRange(iso(first), iso(last)));
   $("mBody").innerHTML = `
     <div class="mcal">${WD.map(w => `<span class="h">${w}</span>`).join("")}${cells}</div>
-    <div class="mstats">
+    ${isMin() ? `<button class="mtoggle sm" data-tg="month" aria-expanded="${!!M.open.month}">Monatsstatistik<small>${fmtKm(T.doneKm)} km</small></button>` : ""}
+    <div class="mstats"${isMin() && !M.open.month ? " hidden" : ""}>
       <div><b class="num">${fmtKm(T.doneKm)}<small>/ ${fmtKm(T.planKm)} km</small></b><span>Gelaufen</span></div>
       <div><b class="num">${T.doneCount}<small>/ ${T.planCount}</small></b><span>Einheiten</span></div>
       <div><b class="num">${T.avgPace ? fmtPaceSec(T.avgPace) : "–"}<small>/km</small></b><span>Ø Pace</span></div>
@@ -2026,6 +2132,10 @@ function mHalf(){
     </div>
     <div class="mdots" aria-hidden="true">${[0,1,2,3,4,5,6,7,8].map(i => `<i class="${i===M.slide?"on":""}"></i>`).join("")}</div>`;
   const car = $("mCar");
+  if (isMin()) car.querySelectorAll(".mslide").forEach(sl => {
+    const h = sl.querySelector("h3");
+    if (h && sl.querySelector("[data-fit], .fc-list, .legend")) h.insertAdjacentHTML("beforeend", `<button class="mtoggle sm" data-more aria-expanded="false">Details</button>`);
+  });
   M.slide = Math.min(M.slide, car.children.length - 1);
   car.scrollLeft = car.children[M.slide].offsetLeft - car.offsetLeft;
   car.onscroll = () => {
@@ -2075,11 +2185,20 @@ $("mBody").addEventListener("touchend", e => {
 
 document.querySelectorAll(".mtabs [data-tab]").forEach(b => b.onclick = () => { if (M.tab===b.dataset.tab) return; M.tab = b.dataset.tab; render(); });
 $("mFab").onclick = quickLog;
+// Minimalist: Aufklappen. data-tg merkt sich den Zustand je Ansicht, data-more klappt eine Analyse-Seite auf
+$("mBody").addEventListener("click", e => {
+  const tg = e.target.closest("[data-tg]");
+  if (tg){ M.open[tg.dataset.tg] = !M.open[tg.dataset.tg]; render(); return; }
+  const mo = e.target.closest("[data-more]");
+  if (mo){ const sl = mo.closest(".mslide"), on = sl.classList.toggle("open"); mo.setAttribute("aria-expanded", String(on)); mo.textContent = on ? "Weniger" : "Details"; }
+});
 PHONE.addEventListener("change", render);
 
 /* Mehr-Menü */
 let moreArm = null, moreArmTimer = null, moreView = "main", colorPick = null;
-function openMore(){ moreArm = null; moreView = "main"; colorPick = null; renderMore(); $("moreDlg").showModal(); }
+function openMore(){ moreArm = null; moreView = "main"; colorPick = null; renderMore(); $("moreDlg").showModal(); focusHead("moreBody"); }
+// Beim Öffnen bekommt die Überschrift den Fokus, sonst umrandet der Browser den ersten Knopf
+function focusHead(id){ const h = $(id).querySelector("h3"); if (h){ h.tabIndex = -1; h.focus({preventScroll:true}); } }
 function armMore(k){ moreArm = k; renderMore(); clearTimeout(moreArmTimer); moreArmTimer = setTimeout(() => { moreArm = null; if ($("moreDlg").open) renderMore(); }, 4000); }
 
 /* Farben je Trainingsart */
@@ -2087,13 +2206,17 @@ const PALETTE = ["#5FD0A2","#A8D672","#4FC3D1","#6EB9DE","#7F88EE","#C18BEA","#E
 const LOOKS = [
   {id:"dark", name:"Dunkel", bg:"#252A30", ring:"#4FC3D1", bar:"#F4B840", bar2:"#7F88EE", line:"#4FC3D1"},
   {id:"light", name:"Hell", bg:"#F3F5F7", ring:"#148A9A", bar:"#D08C14", bar2:"#5F69D6", line:"#148A9A"},
+  {id:"minimal", name:"Minimalist", bg:"#F2F2EF", ring:"#2F5BEA", bar:"#18181A", bar2:"#A9A9A4", line:"#D9D9D4"},
   {id:"sunrise", name:"Morgenlauf", bg:"linear-gradient(165deg,#6A3B6E 0%,#1B1840 72%)", ring:"#FF9E7A", bar:"#FFD166", bar2:"#9AA5FF", line:"linear-gradient(90deg,#FFD166,#FF8A7A,#9AA5FF)"}
 ];
 function applyLook(){
   const look = (state.settings && state.settings.look) || "dark";
   if (look === "dark") delete document.documentElement.dataset.look;
   else document.documentElement.dataset.look = look;
+  const mt = document.querySelector('meta[name="theme-color"]');
+  if (mt) mt.content = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim() || "#252A30";
 }
+const isMin = () => document.documentElement.dataset.look === "minimal";
 async function setLook(look){
   try { await store.saveSettings({...state.settings, look}); state.settings = {...state.settings, look}; applyColors(); renderMore(); }
   catch(e){ toast("Layout konnte nicht gespeichert werden"); }
@@ -2102,7 +2225,7 @@ function applyColors(){
   applyLook();
   const c = (state.settings && state.settings.colors) || {};
   Object.keys(TYPES).forEach(k => {
-    if (c[k]) document.documentElement.style.setProperty(`--t-${k}`, c[k]);
+    if (c[k] && !isMin()) document.documentElement.style.setProperty(`--t-${k}`, c[k]);
     else document.documentElement.style.removeProperty(`--t-${k}`);
   });
 }
@@ -2277,7 +2400,7 @@ let P = null, PT = null, toolArm = false;
 function openPause(from, to){
   const t = iso(today());
   P = { from: from || t, to: to || from || t, reason:"sick", ease:true };
-  toolArm = false; renderPause(); if (!$("toolDlg").open) $("toolDlg").showModal();
+  toolArm = false; renderPause(); if (!$("toolDlg").open){ $("toolDlg").showModal(); focusHead("toolBody"); }
 }
 function renderPause(){
   const r = pausePlan(P), grab = `<div class="grab" aria-hidden="true"></div>`;
@@ -2316,7 +2439,7 @@ function planEnd(){ const st = state.settings || {}; const last = list().reduce(
 function openPlanTool(){
   PT = PT || { act:"remove", type:"strength", newType:"boulder", pct:-10, wdFrom:2, wdTo:1, wd:4, km:6, min:60 };
   PT.from = iso(today()); PT.to = planEnd(); toolArm = false;
-  renderPlanTool(); if (!$("toolDlg").open) $("toolDlg").showModal();
+  renderPlanTool(); if (!$("toolDlg").open){ $("toolDlg").showModal(); focusHead("toolBody"); }
 }
 const typeMatch = (s, t) => t === "runs" ? RUN(s) && s.type !== "race" : t === "all" ? s.type !== "race" && s.type !== "rest" : s.type === t;
 function planChanges(){
@@ -2514,6 +2637,9 @@ function sessionFeedback(s){
   }
   const sp = spikeOf(s);
   if (sp && sp.level !== "ok") warn(`${fmtKm(sp.km)} km sind ${pctStr(sp.pct)} mehr als dein längster Lauf der 30 Tage davor (${fmtKm(sp.base)} km). Steigere einzelne Läufe lieber in kleineren Schritten.`);
+  const pain = (a.tags||[]).filter(t => t !== "tired").map(t => TAGS[t]);
+  if (pain.length) warn(`${pain.join(" und ")} notiert. Wird es beim Einlaufen besser: Umfang halbieren, kein Tempo. Stechend oder schlimmer: pausieren und abklären.`);
+  if ((a.tags||[]).includes("tired")) warn("Schlapp notiert. Ein zusätzlicher Ruhetag ist jetzt oft die beste Einheit.");
   if (a.feel && a.feel <= GOALS.heavyFeel) warn("Hat sich schwer angefühlt. Häufen sich solche Tage, lieber einen Ruhetag einschieben.");
   return { level, text: notes.join(" ") };
 }

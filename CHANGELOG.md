@@ -2,6 +2,12 @@
 
 Neueste Version oben. Die Version entspricht `VERSION` in `sw.js`.
 
+## 2026-10-29-1 · Schlankes Eintragen, Layout „Minimalist“
+- Einheit eintragen: sichtbar sind nur noch Distanz, Zeit und Ø Puls. Anstrengung, Gefühl und Notiz liegen eingeklappt darunter, die gewählten Werte stehen kurz neben der Überschrift.
+- Notiz mit Auswahl zum Antippen: Knieschmerzen, Schienbeinschmerzen, Sprunggelenkschmerzen, Schlapp (gespeichert als `actual.tags`). Erscheinen auf der Karte (⚠), im Excel-Export (Spalte „Beschwerden“) und in der Rückmeldung nach dem Speichern mit Hinweis nach der Schmerz-Ampel.
+- Einstellungen: Der erste Eintrag („Wettkampf & Ziele“) ist beim Öffnen nicht mehr blau umrandet; den Fokus bekommt jetzt die Überschrift. Gilt auch für „Ausfall eintragen“ und „Plan anpassen“.
+- Neues Layout **Minimalist** (Einstellungen → Design): hell, nur eine Akzentfarbe, Trainingsarten als grauer Punkt, alles in klar abgegrenzten weißen Kästen mit Rand. Nebensachen sind eingeklappt: auf „Heute“ der Weg zum Rennen samt offener Einheiten, in der Woche Summe und Hinweise, im Monat die Statistik, in der Analyse die Details jeder Seite (Formcheck nur als Urteil). Karten zeigen nur km; Pace und Zone im Dialog. Eigene Farben der Trainingsarten gelten in diesem Layout nicht.
+
 ## 2026-10-27-3 · Analyse ohne Scrollen
 - Handy, Tab „Analyse“: Jede Seite passt jetzt ohne Scrollen auf den Bildschirm, auch auf kleinen Handys und in der installierten App. Passt eine Seite nicht, wird sie erst dichter gesetzt, dann werden Nebensachen ausgeblendet (Hinweistexte, Legenden, Erklärungen bei grünen Punkten, weitere Sprung-Warnungen). Hauptzahlen, Diagramme und Warnungen bleiben immer sichtbar; Diagramme werden erst als letzter Schritt etwas flacher. Neu berechnet beim Drehen oder Ändern der Fenstergröße.
 - Die Halbjahres-Zahlen (Gelaufen, Einheiten, Ø Pace) stehen jetzt auf der Seite „Wochenkilometer“ statt über allen Seiten. Das gibt jeder Analyse-Seite rund 60 px mehr Platz.

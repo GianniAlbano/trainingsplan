@@ -1,6 +1,6 @@
 # Trainingsplan-App – Entwicklerhandbuch
 
-Stand: 27.10.2026 · App-Version `2026-10-27-3`
+Stand: 29.10.2026 · App-Version `2026-10-29-1`
 
 Diese Datei ist der Einstieg für jeden Chat, der am Code arbeitet. Sie liegt im Repository; das Claude-Projekt „Marathon incoming“ verweist nur noch hierher.
 
@@ -51,7 +51,7 @@ Neue Dateien, die offline verfügbar sein sollen, müssen in die Liste `FILES` i
 Die Datei ist in Abschnitte mit Kommentar-Überschriften gegliedert (`/* ---------- … ---------- */`).
 
 **CSS**
-- Design-Tokens in `:root` (Layout „Dunkel“, Standard), dazu `:root[data-look="light"]` (Hell) und `:root[data-look="sunrise"]` (Morgenlauf). Farben der Trainingsarten als `--t-<typ>`; eigene Farben setzt `applyColors()` als Inline-Variablen.
+- Design-Tokens in `:root` (Layout „Dunkel“, Standard), dazu `:root[data-look="light"]` (Hell) und `:root[data-look="sunrise"]` (Morgenlauf) und `:root[data-look="minimal"]` (Minimalist, Block am Ende des CSS; Aufklappen über `.mtoggle` mit `data-tg` = Zustand in `M.open`, bzw. `data-more` je Analyse-Seite; `isMin()` im JS). Farben der Trainingsarten als `--t-<typ>`; eigene Farben setzt `applyColors()` als Inline-Variablen.
 - Web- und Handyansicht sind getrennt: Unter **640 px** wird `.wrap` ausgeblendet und `.app` (Handy-App) gezeigt. Änderungen am Handy dürfen die Webansicht nicht verändern und umgekehrt.
 - Die Handy-App liegt über dem ganzen Bildschirm und hält Statusleiste und Home-Balken selbst frei; Größen auf „Heute“ richten sich mit `min(…, dvh)` nach der Bildschirmhöhe. Details unter *Gestaltungsregeln*.
 
@@ -87,7 +87,7 @@ Supabase-Tabelle `public.docs`, eine Zeile pro Dokument:
 
 **`sessions/<id>`** (eine Einheit): `date` (JJJJ-MM-TT), `type`, `title`, `planKm`, `planMin`, `planZone`, `planPace` (Sekunden pro km), `planReps`, `planRepDist` (m), `desc`, `example`, `created`, `actual` (`null` oder `{km, sec, hr, rpe, feel, notes, half, loggedAt}`; `half` = Halbzeit in Sekunden, nur bei Wettkämpfen), `skipped` (`null` oder `{reason: sick|injury|other, from, to, at}` – ausgefallen, zählt nicht als geplant), `adj` (`null` oder `{reason, orig}` – nach Ausfall angepasst, `orig` = ursprüngliche Planfelder).
 
-**`settings/main`:** `raceName`, `raceDate`, `goal` (h:mm:ss), `easyHrMax` (Puls-Obergrenze lockere Läufe), `look` (`dark` | `light` | `sunrise`), `colors` (eigene Farben je Art).
+**`settings/main`:** `raceName`, `raceDate`, `goal` (h:mm:ss), `easyHrMax` (Puls-Obergrenze lockere Läufe), `look` (`dark` | `light` | `minimal` | `sunrise`), `colors` (eigene Farben je Art).
 
 ## Formcheck: feste Ziele (`GOALS`)
 

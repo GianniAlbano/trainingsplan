@@ -2,6 +2,9 @@
 
 Neueste Version oben. Die Version entspricht `VERSION` in `sw.js`.
 
+## 2026-10-29-2 · Minimalist: Monatsstatistik ganz lesbar
+- Handy, Layout Minimalist, Tab „Monat“: Ist die Monatsstatistik aufgeklappt, werden die Kalenderzeilen bei Platzmangel flacher (30–52 px) und die Kästen etwas kompakter. So steht die Statistik immer vollständig über der Tab-Leiste, ohne Scrollen, auch auf kleinen iPhones in der installierten App.
+
 ## 2026-10-29-1 · Schlankes Eintragen, Layout „Minimalist“
 - Einheit eintragen: sichtbar sind nur noch Distanz, Zeit und Ø Puls. Anstrengung, Gefühl und Notiz liegen eingeklappt darunter, die gewählten Werte stehen kurz neben der Überschrift.
 - Notiz mit Auswahl zum Antippen: Knieschmerzen, Schienbeinschmerzen, Sprunggelenkschmerzen, Schlapp (gespeichert als `actual.tags`). Erscheinen auf der Karte (⚠), im Excel-Export (Spalte „Beschwerden“) und in der Rückmeldung nach dem Speichern mit Hinweis nach der Schmerz-Ampel.

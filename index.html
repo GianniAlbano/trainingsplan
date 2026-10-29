@@ -782,6 +782,12 @@ form:not(.israce) .raceonly{display:none!important}
 :root[data-look="minimal"] .mcal{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px 6px}
 :root[data-look="minimal"] .mstats{border-top:0;gap:8px}
 :root[data-look="minimal"] .mstats > div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 12px}
+/* Monatsstatistik aufgeklappt: Kalender gibt Höhe ab (Zeilen 30–52 px), Statistik kompakt und immer ganz sichtbar */
+.mcal.fill{flex:0 1 auto;min-height:0;grid-template-rows:auto;grid-auto-rows:minmax(30px,min(52px,7.2vh))}
+.mcal.fill button{height:auto;min-height:0}
+.mcal.fill + .mtoggle + .mstats{flex:none;gap:6px}
+.mcal.fill + .mtoggle + .mstats > div{padding:6px 10px}
+.mcal.fill + .mtoggle + .mstats b{font-size:21px}
 /* Analyse: jede Seite ein Kasten, Details eingeklappt */
 :root[data-look="minimal"] .mslide{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px}
 :root[data-look="minimal"] .mslide:not(.open) [data-fit],
@@ -2068,7 +2074,7 @@ function mMonth(){
   }
   const T = totals(inRange(iso(first), iso(last)));
   $("mBody").innerHTML = `
-    <div class="mcal">${WD.map(w => `<span class="h">${w}</span>`).join("")}${cells}</div>
+    <div class="mcal${isMin() && M.open.month ? " fill" : ""}">${WD.map(w => `<span class="h">${w}</span>`).join("")}${cells}</div>
     ${isMin() ? `<button class="mtoggle sm" data-tg="month" aria-expanded="${!!M.open.month}">Monatsstatistik<small>${fmtKm(T.doneKm)} km</small></button>` : ""}
     <div class="mstats"${isMin() && !M.open.month ? " hidden" : ""}>
       <div><b class="num">${fmtKm(T.doneKm)}<small>/ ${fmtKm(T.planKm)} km</small></b><span>Gelaufen</span></div>

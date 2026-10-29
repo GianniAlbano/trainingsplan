@@ -384,6 +384,33 @@ body.dragging{-webkit-user-select:none;user-select:none}
 .feel.tags button{font-size:11.5px;padding:5px 11px}
 .feel.tags button[aria-pressed="true"]{border-color:var(--warn);color:var(--warn)}
 .res .tagres{color:var(--warn)}
+/* Übungen */
+.exlink{justify-self:start;margin-top:2px}
+.fbcard .exlink{margin-top:8px;display:inline-block}
+.exhead b{font-weight:400;font-size:18px}
+.exhead p{margin:4px 0 0;color:var(--muted);font-size:13.5px;line-height:1.5}
+.examp{display:grid;gap:6px;border:1px solid var(--line-soft);border-radius:12px;padding:10px 12px}
+.examp div{display:grid;grid-template-columns:8px 50px 1fr;gap:8px;align-items:baseline;font-size:12.5px;color:var(--muted)}
+.examp .fc-dot{width:8px;height:8px;align-self:center}
+.examp b{font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+.examp .fc-ok b{color:var(--ok)} .examp .fc-warn b{color:#D9A21B} .examp .fc-bad b{color:var(--warn)}
+.examp .fc-warn .fc-dot{background:#D9A21B}
+.exlist{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.exlist details{border:1px solid var(--line-soft);border-radius:12px;padding:11px 12px;background:color-mix(in srgb,var(--surface) 60%,transparent)}
+.exlist summary{list-style:none;display:grid;grid-template-columns:24px 1fr auto;gap:10px;align-items:center;cursor:pointer}
+.exlist summary::-webkit-details-marker{display:none}
+.exlist summary i{font-style:normal;width:24px;height:24px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font-size:11px;color:var(--muted)}
+.exlist summary b{font-weight:400;font-size:15px}
+.exlist summary span{font-size:12px;color:var(--accent);white-space:nowrap}
+.exlist details[open] summary i{border-color:var(--accent);color:var(--accent)}
+.exlist p{margin:8px 0 0 34px;font-size:13.5px;line-height:1.5}
+.exlist p.why{color:var(--muted);font-size:12.5px;margin-top:4px}
+.exrun{border-left:2px solid var(--bib);padding:2px 0 2px 12px}
+.exrun b{font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--bib)}
+.exrun p{margin:4px 0 0;font-size:13.5px;line-height:1.5}
+:root[data-look="minimal"] .exlist details,
+:root[data-look="minimal"] .examp{background:var(--surface);border-color:var(--line)}
+:root[data-look="minimal"] .exrun{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
 .moredet summary::before{content:"+ "}
 .moredet[open] summary::before{content:"– "}
 .moreinner{display:grid;gap:12px;margin-top:12px}
@@ -782,6 +809,12 @@ form:not(.israce) .raceonly{display:none!important}
 :root[data-look="minimal"] .mcal{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:10px 6px}
 :root[data-look="minimal"] .mstats{border-top:0;gap:8px}
 :root[data-look="minimal"] .mstats > div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 12px}
+/* Monatsstatistik aufgeklappt: Kalender gibt Höhe ab (Zeilen 30–52 px), Statistik kompakt und immer ganz sichtbar */
+.mcal.fill{flex:0 1 auto;min-height:0;grid-template-rows:auto;grid-auto-rows:minmax(30px,min(52px,7.2vh))}
+.mcal.fill button{height:auto;min-height:0}
+.mcal.fill + .mtoggle + .mstats{flex:none;gap:6px}
+.mcal.fill + .mtoggle + .mstats > div{padding:6px 10px}
+.mcal.fill + .mtoggle + .mstats b{font-size:21px}
 /* Analyse: jede Seite ein Kasten, Details eingeklappt */
 :root[data-look="minimal"] .mslide{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px}
 :root[data-look="minimal"] .mslide:not(.open) [data-fit],
@@ -939,6 +972,7 @@ form:not(.israce) .raceonly{display:none!important}
             <div class="feel" id="feel"></div>
             <div class="sublbl">Notiz</div>
             <div class="feel tags" id="tags"></div>
+            <button type="button" class="linkbtn exlink" id="tagEx" hidden></button>
             <textarea id="f_notes" rows="2" placeholder="Wetter, Schuhe, Beine …" aria-label="Notiz"></textarea>
           </div>
         </details>
@@ -1676,7 +1710,9 @@ const TAG_SHORT = { knee:"Knie", shin:"Schienbein", ankle:"Sprunggelenk", tired:
 let tags = new Set();
 $("tags").innerHTML = Object.entries(TAGS).map(([k, v]) => `<button type="button" data-t="${k}" aria-pressed="false">${v}</button>`).join("");
 $("tags").onclick = e => { const b = e.target.closest("button"); if (!b) return; tags.has(b.dataset.t) ? tags.delete(b.dataset.t) : tags.add(b.dataset.t); syncTags(); };
-function syncTags(){ $("tags").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(tags.has(b.dataset.t)))); syncMoreSum(); }
+function syncTags(){ $("tags").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(tags.has(b.dataset.t)))); syncMoreSum();
+  const p = [...tags].find(t => t !== "tired"), l = $("tagEx"); l.hidden = !p;
+  if (p){ l.textContent = `Übungen bei ${TAGS[p]} ›`; l.onclick = () => openExercises(p); } }
 // Eingeklappt: gewählte Werte kurz neben der Überschrift
 function syncMoreSum(){ const el = $("moreSum"); if (!el) return;
   el.textContent = [rpe ? "RPE " + rpe : "", feel ? FEELS[feel-1] : "", ...[...tags].map(t => TAG_SHORT[t])].filter(Boolean).join(" · "); }
@@ -2068,7 +2104,7 @@ function mMonth(){
   }
   const T = totals(inRange(iso(first), iso(last)));
   $("mBody").innerHTML = `
-    <div class="mcal">${WD.map(w => `<span class="h">${w}</span>`).join("")}${cells}</div>
+    <div class="mcal${isMin() && M.open.month ? " fill" : ""}">${WD.map(w => `<span class="h">${w}</span>`).join("")}${cells}</div>
     ${isMin() ? `<button class="mtoggle sm" data-tg="month" aria-expanded="${!!M.open.month}">Monatsstatistik<small>${fmtKm(T.doneKm)} km</small></button>` : ""}
     <div class="mstats"${isMin() && !M.open.month ? " hidden" : ""}>
       <div><b class="num">${fmtKm(T.doneKm)}<small>/ ${fmtKm(T.planKm)} km</small></b><span>Gelaufen</span></div>
@@ -2309,6 +2345,7 @@ function renderMore(){
   const st = state.settings || {}, ex = list().filter(s => s.example).length, s0 = sow(M.day), note = storeNoteText();
   $("moreBody").innerHTML = `${grab}<h3>Einstellungen</h3><div>
     <button class="mrow" data-m="race">Wettkampf &amp; Ziele<small>${st.raceDate ? esc(st.raceName||"Wettkampf")+" · "+parse(st.raceDate).toLocaleDateString("de-DE")+(st.goal ? " · Ziel "+esc(st.goal) : "") : "Noch nicht festgelegt"}</small></button>
+    <button class="mrow" data-m="ex">Übungen<small>Stabi-Programm und Übungen bei Knie-, Schienbein- oder Sprunggelenkschmerzen</small></button>
     <button class="mrow" data-m="plan">Plan anpassen<small>Einheiten für einen Zeitraum hinzufügen, entfernen, ändern oder verschieben</small></button>
     <button class="mrow" data-m="pause">Ausfall eintragen<small>Krank oder verletzt: Einheiten absagen, Wiedereinstieg planen</small></button>
     <button class="mrow" data-m="design">Design<small>Layout und Farben der Trainingsarten</small></button>
@@ -2326,6 +2363,7 @@ function renderMore(){
     if (k==="race"){ $("moreDlg").close(); openRace(); }
     else if (k==="design"){ moreView = "design"; renderMore(); }
     else if (k==="plan"){ $("moreDlg").close(); openPlanTool(); }
+    else if (k==="ex"){ $("moreDlg").close(); openExercises("stabi"); }
     else if (k==="pause"){ $("moreDlg").close(); openPause(); }
     else if (k==="data"){ moreView = "data"; renderMore(); }
     else if (k==="account"){ moreView = "account"; renderMore(); }
@@ -2523,6 +2561,78 @@ function renderPlanTool(){
     toast(`${ch.length} ${ch.length === 1 ? "Einheit" : "Einheiten"} geändert`);
     renderPlanTool();
   };
+}
+
+/* =====================================================================
+   Übungen: Stabi-Grundprogramm und Übungen bei Beschwerden (Dialog #toolDlg)
+   Allgemeine Übungen, keine Diagnose. Inhalte bewusst vorsichtig formuliert.
+   ===================================================================== */
+const EX = {
+  stabi:{ label:"Stabi", title:"Grundprogramm Stabi",
+    intro:"Ca. 20–25 Minuten, 2× pro Woche. Fokus auf Hüfte, Gesäß und Sprunggelenk: Das hält Knie und Füße beim Laufen stabil.",
+    items:[
+      ["Clamshells","3 × 15 je Seite","Seitlage, Knie etwa 90° gebeugt, Füße zusammen. Oberes Knie öffnen, ohne dass das Becken nach hinten kippt.","Seitliches Gesäß: hält das Knie in der Spur."],
+      ["Seitstütz mit Beinheben","3 × 10 je Seite","Unterarm unter der Schulter, Körper eine gerade Linie. Oberes Bein langsam heben und senken.","Rumpf und Hüfte gleichzeitig."],
+      ["Einbeinige Gesäßbrücke","3 × 12 je Seite","Rückenlage, ein Fuß aufgestellt, das andere Bein gestreckt. Becken heben, bis Schulter, Hüfte und Knie eine Linie bilden, 2 s halten.","Gesäß und Oberschenkelrückseite."],
+      ["Bulgarian Split Squat","3 × 8–10 je Seite","Hinterer Fuß auf einer Bank oder einem Stuhl. Langsam nach unten, vorderes Knie zeigt über den Fuß und knickt nicht nach innen.","Kraft für jeden Schritt, einbeinig wie beim Laufen."],
+      ["Step-downs","3 × 10 je Seite","Auf einer Stufe stehen, das freie Bein langsam nach unten tippen. Das Standknie bleibt über dem zweiten Zeh.","Kniekontrolle, besonders bergab."],
+      ["Einbeiniges Wadenheben","3 × 15 je Seite","An einer Stufe ganz hoch auf die Zehen, in 3 Sekunden langsam wieder ab. Einmal mit gestrecktem, einmal mit leicht gebeugtem Knie.","Wade und Achillessehne tragen den Großteil der Laufbelastung."],
+      ["Einbeinstand auf Kissen","3 × 30–45 s je Seite","Auf einem Kissen oder gefalteten Handtuch, Knie leicht gebeugt. Schwerer: Augen zu.","Sprunggelenk und Gleichgewicht."],
+      ["Plank","3 × 30–60 s","Unterarmstütz, Bauch und Gesäß fest, kein Hohlkreuz, gleichmäßig atmen.","Stabiler Rumpf, ruhiger Laufstil."]
+    ]},
+  knee:{ label:"Knie", title:"Bei Knieschmerzen",
+    intro:"Typisch für Läufer ist Schmerz vorne um die Kniescheibe oder außen am Knie. Ziel: das Knie entlasten und Hüfte und Oberschenkel kräftigen.",
+    items:[
+      ["Wandsitz","5 × 30–45 s","Rücken an die Wand, so tief rutschen, wie es schmerzarm geht (oft 45–60°). Halten, ruhig atmen.","Halten statt Bewegen wirkt bei Kniescheibenschmerz oft schmerzlindernd."],
+      ["Clamshells","3 × 15 je Seite","Wie im Grundprogramm, langsam und mit Pause oben.","Schwache Hüftmuskeln lassen das Knie nach innen knicken."],
+      ["Einbeinige Gesäßbrücke","3 × 12 je Seite","Wie im Grundprogramm. Belastet das Knie kaum.","Kraft ohne Druck auf die Kniescheibe."],
+      ["Step-downs, klein","3 × 10 je Seite","Nur eine niedrige Stufe und nur im schmerzfreien Bereich. Knie über dem zweiten Zeh.","Kniekontrolle zurückgewinnen."],
+      ["Faszienrolle Oberschenkel","1–2 min je Seite","Vorderseite und Außenseite des Oberschenkels langsam rollen. Nicht direkt auf dem Knie.","Kann sich lockernd anfühlen; ersetzt aber nicht die Kraftübungen."]
+    ],
+    run:"Umfang reduzieren, kein Tempo und möglichst nicht bergab. Etwas kürzere, schnellere Schritte (5–10 % mehr Schritte pro Minute) senken die Last auf das Knie."},
+  shin:{ label:"Schienbein", title:"Bei Schienbeinschmerzen",
+    intro:"Meist eine Überlastung an der Innenkante des Schienbeins, oft nach schneller Steigerung. Ziel: Wade und Schienbeinmuskel kräftigen und die Belastung senken.",
+    items:[
+      ["Wadenheben","3 × 15","Erst beidbeinig, wenn schmerzfrei einbeinig. Mit gestrecktem und mit gebeugtem Knie, langsam ab.","Eine kräftige Wade fängt Stöße ab, bevor sie das Schienbein erreichen."],
+      ["Zehenheben an der Wand","3 × 15–20","Rücken an die Wand, Fersen etwa 30 cm davor. Fußspitzen heben und langsam senken.","Kräftigt den Muskel vorne am Schienbein."],
+      ["Fersengang","3 × 20 m","Auf den Fersen gehen, Zehen hochgezogen.","Gleicher Muskel, im Stehen."],
+      ["Einbeinstand","3 × 30 s je Seite","Barfuß, Knie leicht gebeugt.","Fußmuskulatur und Stabilität."]
+    ],
+    run:"Umfang deutlich senken, weicher Untergrund, Laufschuhe prüfen. Schmerzt eine kleine Stelle direkt am Knochen oder auch beim Gehen: nicht laufen, sondern ärztlich abklären lassen (Ermüdungsbruch ausschließen)."},
+  ankle:{ label:"Sprunggelenk", title:"Bei Sprunggelenkschmerzen",
+    intro:"Ziel: Beweglichkeit erhalten, dann Stabilität und Kraft wieder aufbauen. Langsam steigern.",
+    items:[
+      ["Fuß-ABC","2 × je Seite","Im Sitzen mit dem großen Zeh das Alphabet in die Luft schreiben.","Beweglichkeit ohne Belastung."],
+      ["Einbeinstand","3 × 30–45 s je Seite","Erst auf dem Boden, dann auf einem Kissen, dann mit geschlossenen Augen.","Das Gelenk lernt wieder, sich selbst zu stabilisieren."],
+      ["Einbeiniges Wadenheben","3 × 15 je Seite","Langsam hoch und langsam ab, erst beidbeinig, wenn es schmerzt.","Kraft rund um das Sprunggelenk."],
+      ["Fuß nach außen drehen mit Band","3 × 15 je Seite","Mit Theraband (falls vorhanden): Band um den Vorfuß, Fuß gegen den Zug nach außen drehen.","Kräftigt die Muskeln, die Umknicken verhindern."],
+      ["Kleine Hüpfer","3 × 10 je Seite","Erst wenn alles andere schmerzfrei geht: auf einem Bein leise auf der Stelle hüpfen.","Bereitet auf die Landung beim Laufen vor."]
+    ],
+    run:"Kurze, flache Runden auf ebenem Untergrund. Bei Schwellung, Bluterguss oder wenn du nicht normal auftreten kannst: ärztlich abklären lassen."}
+};
+const AMPEL = [
+  ["ok","Grün","Muskelkater oder leichtes Ziehen: weitertrainieren."],
+  ["warn","Gelb","Leichter Schmerz, der beim Einlaufen besser wird: Umfang halbieren, kein Tempo."],
+  ["bad","Rot","Stechend, punktuell, wird schlimmer, Schwellung oder Hinken: aufhören und ärztlich abklären."]
+];
+let exView = "stabi";
+function openExercises(view){
+  exView = EX[view] ? view : "stabi";
+  renderExercises(); if (!$("toolDlg").open){ $("toolDlg").showModal(); focusHead("toolBody"); }
+  $("toolDlg").scrollTop = 0;
+}
+function renderExercises(){
+  const e = EX[exView], pain = exView !== "stabi";
+  $("toolBody").innerHTML = `<div class="grab" aria-hidden="true"></div><h3>Übungen</h3>
+    <div class="feel" id="exTabs">${Object.entries(EX).map(([k, v]) => `<button type="button" data-ex="${k}" aria-pressed="${k === exView}">${v.label}</button>`).join("")}</div>
+    <div class="exhead"><b>${e.title}</b><p>${e.intro}</p></div>
+    ${pain ? `<div class="examp">${AMPEL.map(([lv, n, t]) => `<div class="fc-${lv}"><span class="fc-dot"></span><b>${n}</b><span>${t}</span></div>`).join("")}</div>` : ""}
+    <ol class="exlist">${e.items.map(([n, dose, how, why], i) => `<li><details><summary><i>${i+1}</i><b>${n}</b><span>${dose}</span></summary><p>${how}</p><p class="why">${why}</p></details></li>`).join("")}</ol>
+    ${e.run ? `<div class="exrun"><b>Beim Laufen</b><p>${e.run}</p></div>` : ""}
+    <p class="note">${pain ? "Bei den Übungen darf es höchstens leicht ziehen (bis 3 von 10) und am nächsten Morgen nicht schlimmer sein. " : ""}Allgemeine Übungen, keine Diagnose. Hält ein Schmerz länger als 1–2 Wochen an, lass ihn physiotherapeutisch oder ärztlich anschauen.</p>
+    <div class="actions"><div class="r"><button type="button" class="btn" id="exClose">Fertig</button></div></div>`;
+  $("exTabs").querySelectorAll("button").forEach(b => b.onclick = () => { exView = b.dataset.ex; renderExercises(); });
+  $("exClose").onclick = () => $("toolDlg").close();
 }
 
 /* Blätter nach unten wischen zum Schließen */
@@ -3109,8 +3219,10 @@ function showFeedback(id){
   const s = state.sessions.get(id), fb = sessionFeedback(s); if (!fb) return;
   let el = $("fbCard");
   el.className = "fbcard fc-" + fb.level; el.hidden = false;
-  el.innerHTML = `<span class="fc-dot"></span><div><div class="fc-t">${esc(s.title || TYPES[s.type]?.label || "Einheit")}</div><div class="fc-x">${esc(fb.text)}</div></div><button class="iconx" aria-label="Schließen">×</button>`;
-  el.querySelector("button").onclick = () => { el.hidden = true; };
+  const pain = ((s.actual && s.actual.tags) || []).find(t => EX[t]);
+  el.innerHTML = `<span class="fc-dot"></span><div><div class="fc-t">${esc(s.title || TYPES[s.type]?.label || "Einheit")}</div><div class="fc-x">${esc(fb.text)}</div>${pain ? `<button class="linkbtn exlink" id="fbEx">Übungen bei ${TAGS[pain]} ›</button>` : ""}</div><button class="iconx" aria-label="Schließen">×</button>`;
+  el.querySelector(".iconx").onclick = () => { el.hidden = true; };
+  if (pain) $("fbEx").onclick = () => { el.hidden = true; openExercises(pain); };
   clearTimeout(fbTimer); fbTimer = setTimeout(() => { el.hidden = true; }, 9000);
 }
 

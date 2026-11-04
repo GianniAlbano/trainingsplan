@@ -1,6 +1,6 @@
 # Trainingsplan-App – Entwicklerhandbuch
 
-Stand: 29.10.2026 · App-Version `2026-10-29-3`
+Stand: 04.11.2026 · App-Version `2026-11-04-4`
 
 Diese Datei ist der Einstieg für jeden Chat, der am Code arbeitet. Sie liegt im Repository; das Claude-Projekt „Marathon incoming“ verweist nur noch hierher.
 
@@ -36,6 +36,7 @@ Nie ins Repository: `Trainingsplan-Daten.json` oder andere Sicherungen, Supabase
 |---|---|---|
 | `index.html` | die ganze App: CSS, HTML, JavaScript in einer Datei | fast immer |
 | `sw.js` | Service Worker (Offline-Speicher), Konstante `VERSION` | bei jeder Änderung |
+| `messages.js` | Nachricht des Tages: Textbausteine und `build(ctx)`, läuft im Browser und in Node | bei neuen Texten |
 | `config.js` | Supabase-URL und Publishable key | nie (enthält Giannis Werte) |
 | `manifest.webmanifest` | Name, Farben, Symbole für die Installation | selten |
 | `supabase/schema.sql` | Tabelle `docs` mit Zugriffsregeln, Funktion `keepalive()` | selten; neue Version im SQL Editor ausführen |
@@ -59,7 +60,7 @@ Die Datei ist in Abschnitte mit Kommentar-Überschriften gegliedert (`/* -------
 - Konstanten: `TYPES` (Trainingsarten), `NONRUN` (Arten ohne Strecke: Kraft, Bouldern, Ruhetag), `FEELS`, `ZONES` (Pace-Zonen relativ zum Marathontempo), Hilfsfunktionen für Datum, Zeit, Pace.
 - **Speicher** (`store`, `put`, `syncNow`, `init`): lokal zuerst in `localStorage` (`tp.v2.<user-id>`, ohne Konto `tp.v2.local`) mit `docs`, `outbox` (wartende Änderungen) und `lastSync`. Abgleich mit Supabase: erst `outbox` hochladen (upsert), dann Änderungen seit `lastSync` holen. Anmeldung, Registrierung, Passwort zurücksetzen in derselben Sektion.
 - **Rendering Web:** `render()`, `renderHero`, `renderWeek`, `renderMonth`, `renderHalf` (oben Formzeit, Einzelfaktoren, Bereitschaft, Prognose, Fitness, Formcheck).
-- **Handy-App:** `renderMobile()` mit `mToday` (Ringe, Formcheck, „Weg zum Rennen“ über `pathWeeks`/`pathHtml`), `mWeek`, `mMonth`, `mHalf` (Tab „Analyse“: Formzeit, Woher sie kommt, Bereitschaft, Prognose, Fitness, Formcheck, dann Wochen-km mit Halbjahres-Zahlen, Monate, Arten; `fitSlides()` sorgt dafür, dass jede Seite ohne Scrollen passt); Zustand in `M`.
+- **Handy-App:** `renderMobile()` mit `mToday` (Ringe, Nachricht des Tages über `todayMessage()` → `TP_MESSAGES.build`, Formcheck), `mWeek`, `mMonth`, `mHalf` (Tab „Analyse“: Weg zum Rennen über `pathWeeks`/`pathHtml`, Formzeit, Woher sie kommt, Bereitschaft, Prognose, Fitness, Formcheck, dann Wochen-km mit Halbjahres-Zahlen, Monate, Arten; `fitSlides()` sorgt dafür, dass jede Seite ohne Scrollen passt); Zustand in `M`.
 - **Übungen** (Dialog `#toolDlg`): Inhalte in `EX` (Bereiche `stabi`, `knee`, `shin`, `ankle` – Schlüssel wie in `TAGS`), Schmerz-Ampel `AMPEL`, Anzeige `openExercises(view)`/`renderExercises`.
 - **Ausfall & Plan anpassen** (Dialog `#toolDlg`): `openPause`/`pausePlan` (Ausfall mit Wiedereinstieg), `openPlanTool`/`planChanges` (Sammeländerungen), gemeinsam `applyBulk`/`undoBulk`.
 - **Dialoge:** Einheit (`openSession`, Formular `#form`), Wettkampf & Ziele (`openRace`), Einstellungen (`renderMore`, Ansichten `main`, `design`, `colors`, `data`, `account`), Schnellbewertung nach dem Haken (`renderQuick`).
@@ -86,7 +87,7 @@ Supabase-Tabelle `public.docs`, eine Zeile pro Dokument:
 | `deleted` | `true` = gelöscht (damit andere Geräte es mitbekommen) |
 | `updated_at` | per Trigger bei jeder Änderung gesetzt, Grundlage des Abgleichs |
 
-**`sessions/<id>`** (eine Einheit): `date` (JJJJ-MM-TT), `type`, `title`, `planKm`, `planMin`, `planZone`, `planPace` (Sekunden pro km), `planReps`, `planRepDist` (m), `desc`, `example`, `created`, `actual` (`null` oder `{km, sec, hr, rpe, feel, notes, half, loggedAt}`; `half` = Halbzeit in Sekunden, nur bei Wettkämpfen), `skipped` (`null` oder `{reason: sick|injury|other, from, to, at}` – ausgefallen, zählt nicht als geplant), `adj` (`null` oder `{reason, orig}` – nach Ausfall angepasst, `orig` = ursprüngliche Planfelder).
+**`sessions/<id>`** (eine Einheit): `date` (JJJJ-MM-TT), `type`, `title`, `planKm`, `planMin`, `planZone`, `planPace` (Sekunden pro km), `planReps`, `planRepDist` (m), `desc`, `example`, `created`, `actual` (`null` oder `{km, sec, hr, rpe, feel, notes, tags, half, reps, loggedAt}`; `tags` = Beschwerden aus `TAGS` (`knee`, `shin`, `ankle`, `tired`), `half` = Halbzeit in Sekunden, nur bei Wettkämpfen, `reps` = gelaufene Wiederholungen bei Intervallen), `skipped` (`null` oder `{reason: sick|injury|other, from, to, at}` – ausgefallen, zählt nicht als geplant), `adj` (`null` oder `{reason, orig}` – nach Ausfall angepasst, `orig` = ursprüngliche Planfelder).
 
 **`settings/main`:** `raceName`, `raceDate`, `goal` (h:mm:ss), `easyHrMax` (Puls-Obergrenze lockere Läufe), `look` (`dark` | `light` | `minimal` | `sunrise`), `colors` (eigene Farben je Art).
 
@@ -129,7 +130,8 @@ Abschnitt „Analyse“ im JavaScript, nach dem Formcheck. Herleitung und Quelle
 - Analyse-Seiten am Handy: Was bei Platzmangel wegfallen darf, bekommt `data-fit="n"` (kleinste Zahl verschwindet zuerst). `fitSlides()` setzt erst `.tight`, blendet dann diese Teile aus und setzt zuletzt `.tighter` (Diagramme flacher). Hauptzahlen und Warnungen nie mit `data-fit` markieren.
 - Installierte App: `html.standalone` (gesetzt im `<head>`) hält oben mindestens `--top-gap` + 12 px frei, auch wenn iOS keinen Abstand meldet.
 - Handy-Rahmen: `.app` liegt mit `position:fixed; inset:0` über dem ganzen Bildschirm. Die Statusleiste hält `.app` frei (`padding-top`), den Home-Balken nur die Tab-Leiste `.mtabs`. Diese Abstände nie zusätzlich auf `html`/`:root` legen, sonst werden sie doppelt gerechnet.
-- Texte auf Deutsch, Du-Form, kurz und konkret. Zahlen mit deutschem Format (Komma).
+- Texte auf Deutsch, Du-Form, kurz und konkret. Ausnahme: die Nachricht des Tages ist auf Englisch.
+- Absolviert nur für heute oder früher (`syncDoneAllowed`, Prüfung in `quickDone`, beim Speichern und Verschieben). Zahlen mit deutschem Format (Komma).
 
 ## Offene Ideen
 

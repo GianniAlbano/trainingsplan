@@ -21,6 +21,7 @@
 :root{color-scheme:light;box-sizing:border-box}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
 </style>
 <script src="config.js"></script>
+<script src="messages.js"></script>
 <script src="vendor/supabase.js"></script>
 <style>
 /* Layout: ruhige, dunkle Fläche; zentrierter Kopf mit dünnen Ringen, Abschnitte durch farbige Haarlinien getrennt, keine Kästen */
@@ -292,6 +293,7 @@ input[readonly]{color:var(--muted);background:transparent;border-bottom-style:da
 .logbox{border-top:1px solid var(--line-soft);padding-top:18px;display:grid;gap:14px}
 .toggle{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--ink);font-weight:700;letter-spacing:.14em}
 .toggle input{width:20px;height:20px;accent-color:var(--ok);border:0;padding:0}
+.toggle:has(input:disabled){opacity:.45}
 .pacebox{display:flex;align-items:baseline;gap:10px;background:none;border-radius:0;padding:4px 0;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.14em;font-weight:700}
 .pacebox b{color:var(--ink);font-size:32px;font-weight:300;letter-spacing:0;text-transform:none}
 .pacebox span{text-transform:none;letter-spacing:.02em;font-weight:400;font-size:12px}
@@ -380,6 +382,8 @@ body.dragging{-webkit-user-select:none;user-select:none}
 .moredet summary::-webkit-details-marker{display:none}
 .moredet summary em{font-style:normal;font-weight:400;letter-spacing:.02em;text-transform:none;color:var(--muted);margin-left:8px}
 .row.three{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+#logFields .row.intonly{grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:10px;align-items:end}
+#repsHint{padding-bottom:8px}
 .nonrun .row.three{grid-template-columns:1fr}
 .feel.tags button{font-size:11.5px;padding:5px 11px}
 .feel.tags button[aria-pressed="true"]{border-color:var(--warn);color:var(--warn)}
@@ -545,13 +549,26 @@ body.dragging .wpill:not(.drop){border-color:var(--line)}
 .mfit{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:8px;touch-action:pan-x}
 .mrings .count,.mring svg{transition:width .2s,height .2s}
 .mbody.tight{gap:10px;padding-top:10px}
-.mbody.tight .mrings .count,.mbody.tight .mring svg{width:min(100px,27vw);height:min(100px,27vw)}
+.mbody.tight .mrings .count,.mbody.tight .mring svg{width:min(92px,25vw);height:min(92px,25vw)}
 .mbody.tight .mrings .count .big{font-size:30px}
 .mbody.tight .mrings .count .lbl{font-size:8.5px}
 .mnotice{display:flex;justify-content:space-between;align-items:center;gap:10px;border-left:2px solid var(--warn);padding:4px 0 4px 12px;font-size:13px;color:var(--muted)}
 .mnotice.ex{border-left-color:var(--bib)}
 .mnotice .acts{display:flex;gap:14px;flex:none}
 /* Heute: Weg zum Rennen */
+/* Heute: Nachricht des Tages */
+.mmsg{display:grid;gap:10px;padding:18px 18px 20px;border:1px solid var(--line);border-radius:16px;background:var(--surface);position:relative;overflow:hidden}
+.mmsg::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent)}
+.mmsg .ml{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+.mmsg p{margin:0;font-size:clamp(17px,4.9vw,20px);font-weight:300;line-height:1.45;color:var(--ink);text-wrap:pretty}
+.mmsg p b{font-weight:400}
+.mbody.tight .mmsg{padding:14px 16px 16px}
+.mbody.tight .mmsg p{font-size:16px}
+:root[data-look="minimal"] .mmsg::before{display:none}
+.mslide .mpath{border-top:0;padding-top:0}
+.mslide .mpchart{max-height:min(300px,38dvh)}
+.mslide .mpchart svg{height:100%}
+:root[data-look="minimal"] .mslide .mpath{background:none;border:0;padding:0}
 .mpath{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line-soft);padding-top:12px}
 .mpchart{flex:1;min-height:64px;position:relative}
 .mpchart svg{position:absolute;inset:0;width:100%;height:100%;display:block;overflow:visible}
@@ -697,8 +714,10 @@ body.locked{overflow:hidden}
 @media (max-width:640px){
   .mtabs button{font-size:10px}
   .mtabs button svg{width:24px;height:24px}
-  .mrings .count,.mring svg{width:min(150px,36vw,19dvh);height:min(150px,36vw,19dvh)}
-  .mrings .count .big{font-size:clamp(34px,10vw,44px)}
+  .mrings .count,.mring svg{width:min(112px,29vw,14dvh);height:min(112px,29vw,14dvh)}
+  .mrings .count{padding:8px}
+  .mrings .count .big{font-size:clamp(26px,7.5vw,34px)}
+  .mrings .count .lbl{font-size:8.5px}
 }
 /* ---------- Analyse ---------- */
 .an-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
@@ -954,12 +973,14 @@ form:not(.israce) .raceonly{display:none!important}
     </fieldset>
     <div class="logbox">
       <label class="toggle"><input type="checkbox" id="f_done"> Absolviert</label>
+      <span class="hint" id="doneHint" hidden></span>
       <div id="logFields" class="logfields" hidden>
         <div class="row three">
           <label class="runonly">Distanz (km)<input type="text" id="f_km" inputmode="decimal" data-dec autocomplete="off" placeholder="10,25"></label>
           <label><span id="timeLbl">Zeit</span><input type="text" id="f_time" placeholder="0:52:30" inputmode="numeric" data-mask="hms" autocomplete="off"></label>
           <label class="runonly">Ø Puls<input type="number" id="f_hr" min="40" max="230" inputmode="numeric" placeholder="142"></label>
         </div>
+        <div class="row intonly"><label>Wiederholungen<input type="number" id="f_repsDone" min="0" max="50" step="1" inputmode="numeric"></label><span class="hint" id="repsHint"></span></div>
         <div class="row raceonly"><label>Halbzeit (h:mm:ss)<input type="text" id="f_half" placeholder="1:58:00" inputmode="numeric" data-mask="hms" autocomplete="off"></label></div>
         <div class="pacebox runonly">Pace <b id="paceOut">–</b><span id="paceCmp"></span></div>
         <details class="moredet" id="moreDet">
@@ -1377,8 +1398,8 @@ function cardHtml(s){
     (() => { const sp = !s.actual && !s.skipped && s.date >= iso(today()) ? spikeOf(s) : null;
       return sp && sp.level !== "ok" ? `<span class="spike fc-${sp.level}" title="${fmtKm(sp.km)} km, längster Lauf der 30 Tage davor ${fmtKm(sp.base)} km">▲ ${pctStr(sp.pct)}</span>` : ""; })()].join("");
   const a = s.actual, skip = st === "skipped";
-  const res = skip ? `<span>Ausgefallen${s.skipped.reason && PAUSE_REASONS[s.skipped.reason] ? " · " + PAUSE_REASONS[s.skipped.reason] : ""}</span>` : a ? [a.km?`<span>${fmtKm(a.km)} km</span>`:"", a.sec?`<span>${NONRUN.has(s.type) ? fmtMin(a.sec) : fmtTime(a.sec)}</span>`:"", a.km&&a.sec?`<span>${fmtPace(a.sec,a.km)}</span>`:"", a.hr?`<span>♥ ${a.hr}</span>`:"", a.feel?`<span>${FEELS[a.feel-1]}</span>`:"", (a.tags||[]).length?`<span class="tagres">⚠ ${a.tags.map(t => TAG_SHORT[t]).filter(Boolean).join(", ")}</span>`:""].join("") : "";
-  const check = st==="rest" || skip ? "" : st==="done"
+  const res = skip ? `<span>Ausgefallen${s.skipped.reason && PAUSE_REASONS[s.skipped.reason] ? " · " + PAUSE_REASONS[s.skipped.reason] : ""}</span>` : a ? [a.km?`<span>${fmtKm(a.km)} km</span>`:"", a.sec?`<span>${NONRUN.has(s.type) ? fmtMin(a.sec) : fmtTime(a.sec)}</span>`:"", a.km&&a.sec?`<span>${fmtPace(a.sec,a.km)}</span>`:"", a.reps?`<span>${a.reps}× Wdh.</span>`:"", a.hr?`<span>♥ ${a.hr}</span>`:"", a.feel?`<span>${FEELS[a.feel-1]}</span>`:"", (a.tags||[]).length?`<span class="tagres">⚠ ${a.tags.map(t => TAG_SHORT[t]).filter(Boolean).join(", ")}</span>`:""].join("") : "";
+  const check = st==="rest" || skip || (st !== "done" && s.date > iso(today())) ? "" : st==="done"
     ? `<span class="check done" title="Absolviert" aria-label="Absolviert">${CHECK_SVG}</span>`
     : `<button class="check ${st==="missed"?"missed":""}" data-check="${esc(s.id)}" title="Wie geplant erledigt" aria-label="${esc(TYPES[s.type]?.label)} wie geplant erledigt">${CHECK_SVG}</button>`;
   return `<div class="card ${s.type==="rest"?"rest":""} ${skip?"skipped":""}" style="--tc:${tc}" data-id="${esc(s.id)}"${FINE ? ' draggable="true"' : ""}>
@@ -1425,6 +1446,7 @@ function renderWeek(){
 async function moveSession(id, date){
   const s = state.sessions.get(id);
   if (!s || !date || s.date===date) return;
+  if (s.actual && date > iso(today())){ toast("Erledigte Einheiten können nicht in die Zukunft verschoben werden."); return; }
   const {id:_, ...body} = s; body.date = date; body.example = false;
   try { await store.save(id, body); toast(`Verschoben auf ${WD_L[(parse(date).getDay()+6)%7]}, ${fmtDM(parse(date))}`); } catch(err){ toast("Verschieben hat nicht geklappt"); }
 }
@@ -1518,11 +1540,19 @@ function bindCards(){
 /* ---------- Ein-Tipp: wie geplant erledigt ---------- */
 let quickId = null, quickTimer = null;
 const strip = s => { const {id, ...b} = s; return b; };
+// Geplante Wiederholungen: Feld planReps, sonst aus dem Titel („1000m ×5“, „6 × 800 m“)
+function planRepsOf(s){
+  if (!s || s.type !== "interval") return null;
+  if (s.planReps) return +s.planReps;
+  const m = /[×x]\s*(\d+)\b/i.exec(s.title || "") || /(\d+)\s*[×x]/i.exec(s.title || "");
+  return m ? +m[1] : null;
+}
 async function quickDone(id){
   const s = state.sessions.get(id); if (!s) return;
+  if (s.date > iso(today())){ toast("Einheiten in der Zukunft kannst du erst an dem Tag abhaken."); return; }
   const km = s.planKm || null, pm = planMinutes(s);
   const sec = pm ? pm*60 : (km && planPace(s) ? Math.round(km*planPace(s)) : null);
-  const body = {...strip(s), example:false, skipped:null, actual:{km, sec, hr:null, rpe:null, feel:null, notes:"", loggedAt:new Date().toISOString()}};
+  const body = {...strip(s), example:false, skipped:null, actual:{km, sec, hr:null, rpe:null, feel:null, notes:"", reps: s.type === "interval" ? planRepsOf(s) : null, loggedAt:new Date().toISOString()}};
   try { await store.save(id, body); showQuick(id); }
   catch(e){ toast("Eintragen hat nicht geklappt. Prüfe deine Verbindung."); }
 }
@@ -1669,11 +1699,11 @@ async function exportExcel(){
         "Plan Distanz (km)": s.planKm ?? "", "Plan Dauer (min)": planMinutes(s) ?? "", "Plan Zone": s.planZone && ZONES[s.planZone] ? ZONES[s.planZone].label : "", "Plan Pace (min/km)": pp ? fmtPaceSec(pp) : "",
         "Distanz (km)": a.km ?? "", "Zeit (h:mm:ss)": a.sec ? fmtTime(a.sec) : "", "Dauer (min)": a.sec ? Math.round(a.sec/6)/10 : "",
         "Pace (min/km)": a.km && a.sec ? fmtPaceSec(a.sec/a.km) : "", "Ø Puls": a.hr ?? "", "RPE": a.rpe ?? "",
-        "Gefühl": a.feel ? FEELS[a.feel-1] : "", "Beschwerden": (a.tags||[]).map(t => TAGS[t]).filter(Boolean).join(", "), "Notiz": a.notes || ""
+        "Gefühl": a.feel ? FEELS[a.feel-1] : "", "Wiederholungen": a.reps ?? "", "Beschwerden": (a.tags||[]).map(t => TAGS[t]).filter(Boolean).join(", "), "Notiz": a.notes || ""
       };
     });
     const ws = XLSX.utils.json_to_sheet(rows, {cellDates:true, dateNF:"dd.mm.yyyy"});
-    ws["!cols"] = [12,12,5,16,26,10,10,14,10,11,12,10,11,8,6,9,22,36].map(w => ({wch:w}));
+    ws["!cols"] = [12,12,5,16,26,10,10,14,10,11,12,10,11,8,6,9,13,22,36].map(w => ({wch:w}));
     ws["!autofilter"] = {ref: ws["!ref"]};
     // Wochenübersicht
     const wk = new Map();
@@ -1723,6 +1753,14 @@ const isNonrun = () => NONRUN.has($("f_type").value);
 // Dauer bei Kraft/Bouldern: "90" = 90 min, "1:30" = 1 h 30 min
 const parseDur = s => { const p = String(s||"").trim().split(":").map(Number);
   if (p.length===2 && !p.some(isNaN)) return p[0]*3600 + p[1]*60; return parseTime(s); };
+// Absolviert geht nur für heute und vergangene Tage
+function syncDoneAllowed(){
+  const future = ($("f_date").value || iso(today())) > iso(today()), cb = $("f_done");
+  cb.disabled = future && !cb.checked;
+  $("doneHint").hidden = !future;
+  $("doneHint").textContent = cb.checked ? "Das Datum liegt in der Zukunft. Absolvierte Einheiten bitte auf heute oder früher legen." : "Abhaken kannst du die Einheit ab dem Tag, an dem sie geplant ist.";
+}
+$("f_date").addEventListener("change", syncDoneAllowed);
 $("f_done").onchange = () => {
   $("logFields").hidden = !$("f_done").checked; $("form").classList.toggle("logging", $("f_done").checked);
   if ($("f_done").checked){
@@ -1820,13 +1858,16 @@ function openSession(id, date, logNow){
   showPlanEdit(!s);
   renderSessionInfo(s);
   const a = s?.actual;
-  $("f_done").checked = !!a || !!logNow;
+  $("f_done").checked = !!a || (!!logNow && iso(dt) <= iso(today()));
+  syncDoneAllowed();
   $("logFields").hidden = !$("f_done").checked; $("form").classList.toggle("logging", $("f_done").checked);
   $("f_km").value = decStr(a?.km ?? (logNow && s?.planKm && !NONRUN.has(s.type) ? s.planKm : null));
   $("f_time").value = a?.sec ? (NONRUN.has(s.type) ? fmtHM(a.sec) : fmtHMS(a.sec))
     : (logNow && s && NONRUN.has(s.type) && planMinutes(s) ? fmtHM(planMinutes(s)*60) : "");
   $("f_hr").value = a?.hr ?? "";
   $("f_half").value = a?.half ? fmtHMS(a.half) : "";
+  { const pr = s ? planRepsOf(s) : null; $("f_repsDone").value = a?.reps ?? (pr || "");
+    $("repsHint").textContent = pr ? `Geplant: ${pr}. Gleiche Zahl, mehr km = länger ein- oder ausgelaufen.` : ""; }
   rpe = a?.rpe ?? null; syncRpe();
   feel = a?.feel ?? null; syncFeel();
   $("f_notes").value = a?.notes || "";
@@ -1883,6 +1924,7 @@ $("form").onsubmit = async e => {
     desc: $("f_desc").value.trim(), example: false, created: prev?.created || Date.now(),
     skipped: $("f_done").checked ? null : (prev?.skipped || null), adj: prev?.adj || null
   };
+  if ($("f_done").checked && date > iso(today())){ showPlanEdit(true); showErr("Absolvierte Einheiten können nicht in der Zukunft liegen. Wähle heute oder ein früheres Datum."); return; }
   if ($("f_done").checked){
     const t = $("f_time").value.trim(), sec = nr ? parseDur(t) : parseTime(t);
     if (t && t.split(":").slice(1).some(x => +x > 59)){ showErr("Minuten und Sekunden dürfen höchstens 59 sein."); return; }
@@ -1891,6 +1933,7 @@ $("form").onsubmit = async e => {
     if (t && !sec){ showErr(nr ? "Dauer bitte in Minuten oder als h:mm eingeben, z. B. 90 oder 1:30." : "Zeit bitte als h:mm:ss oder mm:ss eingeben, z. B. 52:30."); return; }
     body.actual = { km: nr || $("f_km").value==="" ? null : kmv("f_km"), sec: sec || null,
       hr: nr || $("f_hr").value==="" ? null : +$("f_hr").value, rpe, feel, notes: $("f_notes").value.trim(), tags: [...tags], half: half || null,
+      reps: $("f_type").value === "interval" && $("f_repsDone").value !== "" ? +$("f_repsDone").value : null,
       loggedAt: prev?.actual?.loggedAt || new Date().toISOString() };
   } else body.actual = null;
   $("saveBtn").disabled = true;
@@ -1991,19 +2034,15 @@ function mToday(){
       : days === 0 ? `<div class="count"><span class="big">Heute</span><span class="lbl">Renntag</span></div>`
       : `<div class="count"><span class="big num">${-days}</span><span class="lbl">Tage seit dem Rennen</span></div>`;
   } else count = `<div class="count"><span class="lbl">Countdown</span><button class="btn ghost sm" id="mRace">Renndatum eintragen</button></div>`;
-  const missed = list().filter(s => status(s)==="missed" && s.date >= iso(addDays(t,-7))).sort(byDate);
   $("mBody").innerHTML = `
     <div class="mrings">${count}
       <div class="mring">${ringSvg(pct)}<span class="lbl">Diese Woche</span><span class="val num">${fmtKm(wt.doneKm)} <small>/ ${fmtKm(wt.planKm)} km</small></span></div></div>
     <div class="mfit" id="mFit">
+      ${(() => { const m = todayMessage(); return m ? `<div class="mmsg" lang="en"><span class="ml">Today · ${esc(m.label)}</span><p>${esc(m.text)}</p></div>` : ""; })()}
       ${(() => { const f = formcheck(); return f.verdict.level === "na" ? "" : `<button class="mfc fc-${f.verdict.level} fitdrop" id="mFc"><b>${f.verdict.label}</b><span>${f.checks.filter(c => c.level !== "ok").map(c => c.title).join(" · ") || "Alle Ziele im grünen Bereich"}</span></button>`; })()}
-      ${isMin() ? `<button class="mtoggle" data-tg="today" aria-expanded="${!!M.open.today}">Weg zum ${esc(st.raceName || "Rennen")}<small>${missed.length ? (missed.length === 1 ? "1 Einheit offen" : missed.length + " Einheiten offen") : ""}</small></button>` : ""}
-      ${isMin() && !M.open.today ? "" : `${missed.length ? `<div class="mnotice fitdrop"><span>${missed.length===1 ? "1 Einheit" : missed.length+" Einheiten"} der letzten Tage offen</span><span class="acts"><button class="mlink" id="mMissedSick" data-from="${missed[0].date}">Ausfall</button><button class="mlink" data-goto="${missed[0].date}">Ansehen</button></span></div>` : ""}
-      ${pathHtml()}`}
     </div>`;
   if ($("mRace")) $("mRace").onclick = openRace;
-  if ($("mFc")) $("mFc").onclick = () => { M.tab = "half"; M.slide = 0; M.half = today(); render(); };
-  if ($("mMissedSick")) $("mMissedSick").onclick = () => openPause($("mMissedSick").dataset.from, iso(addDays(t,-1)));
+  if ($("mFc")) $("mFc").onclick = () => { M.tab = "half"; M.slideTo = "Formcheck"; M.half = today(); render(); };
   // Alles muss ohne Scrollen passen: erst kleinere Ringe, dann Nebensachen ausblenden
   requestAnimationFrame(() => {
     const fit = $("mFit"); if (!fit) return;
@@ -2014,7 +2053,26 @@ function mToday(){
   });
 }
 
-/* Heute: der ganze Weg bis zum Rennen – Wochenkilometer, Phasen, Bilanz */
+/* Nachricht des Tages: Lage von heute für messages.js zusammenstellen */
+const KIND_RANK = ["race","long","interval","tempo","easy","boulder","strength","cross"];
+const isLongRun = s => s.type === "easy" && (s.planZone === "long" || (+s.planKm || 0) >= 14);
+const msgKind = s => s.type === "race" ? "race" : isLongRun(s) ? "long" : s.type === "recovery" ? "easy" : KIND_RANK.includes(s.type) ? s.type : "easy";
+const topKind = arr => arr.map(msgKind).sort((a, b) => KIND_RANK.indexOf(a) - KIND_RANK.indexOf(b))[0] || null;
+function todayMessage(){
+  if (!window.TP_MESSAGES) return null;
+  const t = today(), ts = iso(t), st = state.settings || {};
+  const items = inRange(ts, ts).filter(s => s.type !== "rest"), active = items.filter(s => !s.skipped);
+  let kind;
+  if (!active.length) kind = items.some(s => s.skipped && s.skipped.reason !== "other") ? "sick" : "rest";
+  else if (active.every(s => s.actual)) kind = "done";
+  else kind = topKind(active.filter(s => !s.actual));
+  const tm = iso(addDays(t, 1)), tk = topKind(inRange(tm, tm).filter(s => s.type !== "rest" && !s.skipped));
+  const tomorrow = tk === "race" || tk === "long" || tk === "interval" ? tk : null;
+  const daysToRace = st.raceDate ? Math.round((parse(st.raceDate) - t) / 864e5) : null;
+  return TP_MESSAGES.build({ date: ts, weekday: t.getDay(), kind, tomorrow, daysToRace, raceName: st.raceName || "" });
+}
+
+/* Analyse: der ganze Weg bis zum Rennen – Wochenkilometer, Phasen, Bilanz */
 function pathWeeks(){
   const all = list().filter(s => s.type !== "rest"); if (!all.length) return null;
   const st = state.settings || {}, first = all.reduce((a, s) => s.date < a ? s.date : a, all[0].date);
@@ -2053,7 +2111,7 @@ function pathHtml(){
   const goalDays = goal ? Math.round((parse(goal.date) - today()) / 864e5) : 0;
   const wk = ci >= 0 ? `Woche ${ci+1} von ${n}` : iso(weeks[0].start) > cur ? `Start in ${Math.ceil((weeks[0].start - today())/864e5)} Tagen` : `${n} Wochen`;
   return `<section class="mpath">
-      <div class="mlbl">Weg zum ${esc(st.raceName || "Rennen")} <span>${wk}</span></div>
+      <div class="mlbl"><span>${wk}</span></div>
       <div class="mpchart" id="mPath"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Wochenkilometer vom Planstart bis zum Rennen">${bars}</svg>${ci >= 0 ? `<div class="mpmark${(ci*10+5)/(n*10) > .75 ? " flip" : ""}" style="left:${((ci*10+5)/(n*10)*100).toFixed(2)}%"><span>Heute</span></div>` : ""}</div>
       <div class="mpphase">${segs.map(s => `<i style="flex:${s.n};--tc:var(--t-${PHASES[s.p].tc})"></i>`).join("")}</div>
       <div class="mpleg">${used.map(p => `<span style="--tc:var(--t-${PHASES[p].tc})"><i></i>${PHASES[p].label}</span>`).join("")}<span class="r" style="--tc:var(--accent)"><i></i>gelaufen</span></div>
@@ -2150,6 +2208,7 @@ function mHalf(){
 
   $("mBody").innerHTML = `
     <div class="mcar" id="mCar">
+      ${(() => { const p = pathHtml(); return p ? `<section class="mslide"><h3>Weg zum ${esc((state.settings || {}).raceName || "Rennen")}</h3>${p}</section>` : ""; })()}
       ${(() => { const A = analysis(); return `<section class="mslide"><h3>Formzeit</h3>${anaFormzeitHtml(A, true)}</section>
       <section class="mslide"><h3>Woher sie kommt</h3>${anaFactorsHtml(A, true)}</section>
       <section class="mslide"><h3>Bereitschaft</h3>${anaReadyHtml(A, true)}</section>
@@ -2166,13 +2225,15 @@ function mHalf(){
       <section class="mslide"><h3>Monate</h3><table><thead><tr><th>Monat</th><th>km</th><th>Pace</th><th>Quote</th></tr></thead><tbody>${rows}</tbody></table></section>
       <section class="mslide"><h3>Trainingsarten</h3><div class="typebars">${tb}</div></section>
     </div>
-    <div class="mdots" aria-hidden="true">${[0,1,2,3,4,5,6,7,8].map(i => `<i class="${i===M.slide?"on":""}"></i>`).join("")}</div>`;
+    <div class="mdots" aria-hidden="true"></div>`;
   const car = $("mCar");
   if (isMin()) car.querySelectorAll(".mslide").forEach(sl => {
     const h = sl.querySelector("h3");
     if (h && sl.querySelector("[data-fit], .fc-list, .legend")) h.insertAdjacentHTML("beforeend", `<button class="mtoggle sm" data-more aria-expanded="false">Details</button>`);
   });
+  if (M.slideTo){ const i = [...car.children].findIndex(sl => sl.querySelector("h3")?.textContent.startsWith(M.slideTo)); if (i >= 0) M.slide = i; M.slideTo = null; }
   M.slide = Math.min(M.slide, car.children.length - 1);
+  $("mBody").querySelector(".mdots").innerHTML = [...car.children].map((_, i) => `<i class="${i===M.slide?"on":""}"></i>`).join("");
   car.scrollLeft = car.children[M.slide].offsetLeft - car.offsetLeft;
   car.onscroll = () => {
     const i = Math.round(car.scrollLeft / (car.clientWidth + 16));
@@ -2734,6 +2795,12 @@ function sessionFeedback(s){
     notes.push("Harte Einheit erledigt.");
     if (a.rpe >= GOALS.hardRpe) warn(`Sehr hart (${a.rpe}/10). Geh die Wiederholungen beim nächsten Mal etwas ruhiger an.`);
     else if (a.rpe && a.rpe <= 5) notes.push("Fühlte sich leicht an: ein gutes Zeichen für deine Form.");
+    const pr = planRepsOf(s), extra = a.km && s.planKm ? a.km - s.planKm : 0;
+    if (pr && a.reps){
+      if (a.reps > pr) notes.push(`${a.reps - pr} ${a.reps - pr === 1 ? "Wiederholung" : "Wiederholungen"} mehr als geplant (${a.reps} statt ${pr}). Mehr ist bei Intervallen nicht automatisch besser.`);
+      else if (a.reps < pr) notes.push(`${a.reps} von ${pr} Wiederholungen. Völlig okay, wenn die Beine nicht mehr wollten.`);
+      else if (extra >= 0.5) notes.push(`Alle ${pr} Wiederholungen wie geplant, die ${fmtKm(extra)} km mehr kommen vom Ein- oder Auslaufen.`);
+    }
   } else if (s.type === "race" && a.km >= 5 && a.sec){
     const r = raceToMarathon(a.sec, +a.km, (analysis().act || {}).kmWeek || 0), g = goalSec(state.settings && state.settings.goal);
     notes.push(a.km >= 40 ? `${fmtPaceSec(pace)} /km. Glückwunsch zum Marathon!` : `${fmtPaceSec(pace)} /km. Hochgerechnet auf den Marathon: etwa ${fmtHM(r.est - 15*60)}–${fmtHM(r.est + 15*60)} h${g ? (r.est <= g + 5*60 ? ", im Bereich deiner Zielzeit." : ` (Ziel ${fmtHM(g)}).`) : "."}`);
@@ -2743,7 +2810,7 @@ function sessionFeedback(s){
   if (RUN(s) && a.km && s.planKm){
     const r = a.km / s.planKm;
     if (r < 0.85) warn(`Kürzer als geplant (${fmtKm(a.km)} von ${fmtKm(s.planKm)} km).`);
-    else if (r > 1 + GOALS.overPlan) warn(`Länger als geplant (${fmtKm(a.km)} statt ${fmtKm(s.planKm)} km).`);
+    else if (r > 1 + GOALS.overPlan && !(s.type === "interval" && a.reps && a.reps === planRepsOf(s))) warn(`Länger als geplant (${fmtKm(a.km)} statt ${fmtKm(s.planKm)} km).`);
   }
   const sp = spikeOf(s);
   if (sp && sp.level !== "ok") warn(`${fmtKm(sp.km)} km sind ${pctStr(sp.pct)} mehr als dein längster Lauf der 30 Tage davor (${fmtKm(sp.base)} km). Steigere einzelne Läufe lieber in kleineren Schritten.`);

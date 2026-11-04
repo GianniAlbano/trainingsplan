@@ -7,9 +7,10 @@
     "Good morning, sunshine! ☀️", "Hey legend!", "Rise and shine, future marathoner!", "Hello, speedy!",
     "Morning, champ!", "Hey you with the strong legs!", "Hi there, superstar!", "Well hello, marathon machine!",
     "Hey hey, happy feet!", "Guten Morgen… oops, wrong language. Good morning, legend!", "Look who's up, the runner of the year!",
-    "Hello, fast friend!", "Ahoy, captain of the running crew!", "Hey there, kilometre collector!",
-    "Hey sexy! 😏", "Hey beautiful!", "Hello, gorgeous!", "Hey good-looking! 😎"
+    "Hello, fast friend!", "Ahoy, captain of the running crew!", "Hey there, kilometre collector!"
   ];
+  // Kommen öfter: an etwa jedem zweiten Tag
+  const GREET_SWEET = ["Hey sexy! 😏", "Hey beautiful!", "Hello, gorgeous!", "Hey good-looking! 😎", "Hey handsome!", "Good morning, beautiful! ☀️"];
   const GREET_DAY = {
     1: ["Happy Monday! Fresh week, fresh legs.", "Monday again, and you're still awesome."],
     5: ["It's Friday, you legend!", "Hello Friday, hello weekend vibes!"],
@@ -105,7 +106,8 @@
   function build(ctx){
     const d = ctx.date, kind = BODY[ctx.kind] ? ctx.kind : "rest";
     const dayGreet = GREET_DAY[ctx.weekday];
-    const greet = dayGreet && hash(d + "w") % 2 ? pick(dayGreet, d + "g") : pick(GREET, d + "g");
+    const r = hash(d + "w") % 10;
+    const greet = r < 5 ? pick(GREET_SWEET, d + "g") : dayGreet && r < 7 ? pick(dayGreet, d + "g") : pick(GREET, d + "g");
     const parts = [greet, pick(BODY[kind], d + kind)];
     if (ctx.tomorrow && TOMORROW[ctx.tomorrow] && (kind === "rest" || kind === "easy" || kind === "done" || kind === "boulder" || kind === "strength"))
       parts.push(pick(TOMORROW[ctx.tomorrow], d + "t"));

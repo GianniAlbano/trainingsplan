@@ -382,6 +382,8 @@ body.dragging{-webkit-user-select:none;user-select:none}
 .moredet summary::-webkit-details-marker{display:none}
 .moredet summary em{font-style:normal;font-weight:400;letter-spacing:.02em;text-transform:none;color:var(--muted);margin-left:8px}
 .row.three{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+#logFields .row.intonly{grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:10px;align-items:end}
+#repsHint{padding-bottom:8px}
 .nonrun .row.three{grid-template-columns:1fr}
 .feel.tags button{font-size:11.5px;padding:5px 11px}
 .feel.tags button[aria-pressed="true"]{border-color:var(--warn);color:var(--warn)}
@@ -978,6 +980,7 @@ form:not(.israce) .raceonly{display:none!important}
           <label><span id="timeLbl">Zeit</span><input type="text" id="f_time" placeholder="0:52:30" inputmode="numeric" data-mask="hms" autocomplete="off"></label>
           <label class="runonly">Ø Puls<input type="number" id="f_hr" min="40" max="230" inputmode="numeric" placeholder="142"></label>
         </div>
+        <div class="row intonly"><label>Wiederholungen<input type="number" id="f_repsDone" min="0" max="50" step="1" inputmode="numeric"></label><span class="hint" id="repsHint"></span></div>
         <div class="row raceonly"><label>Halbzeit (h:mm:ss)<input type="text" id="f_half" placeholder="1:58:00" inputmode="numeric" data-mask="hms" autocomplete="off"></label></div>
         <div class="pacebox runonly">Pace <b id="paceOut">–</b><span id="paceCmp"></span></div>
         <details class="moredet" id="moreDet">
@@ -1395,7 +1398,7 @@ function cardHtml(s){
     (() => { const sp = !s.actual && !s.skipped && s.date >= iso(today()) ? spikeOf(s) : null;
       return sp && sp.level !== "ok" ? `<span class="spike fc-${sp.level}" title="${fmtKm(sp.km)} km, längster Lauf der 30 Tage davor ${fmtKm(sp.base)} km">▲ ${pctStr(sp.pct)}</span>` : ""; })()].join("");
   const a = s.actual, skip = st === "skipped";
-  const res = skip ? `<span>Ausgefallen${s.skipped.reason && PAUSE_REASONS[s.skipped.reason] ? " · " + PAUSE_REASONS[s.skipped.reason] : ""}</span>` : a ? [a.km?`<span>${fmtKm(a.km)} km</span>`:"", a.sec?`<span>${NONRUN.has(s.type) ? fmtMin(a.sec) : fmtTime(a.sec)}</span>`:"", a.km&&a.sec?`<span>${fmtPace(a.sec,a.km)}</span>`:"", a.hr?`<span>♥ ${a.hr}</span>`:"", a.feel?`<span>${FEELS[a.feel-1]}</span>`:"", (a.tags||[]).length?`<span class="tagres">⚠ ${a.tags.map(t => TAG_SHORT[t]).filter(Boolean).join(", ")}</span>`:""].join("") : "";
+  const res = skip ? `<span>Ausgefallen${s.skipped.reason && PAUSE_REASONS[s.skipped.reason] ? " · " + PAUSE_REASONS[s.skipped.reason] : ""}</span>` : a ? [a.km?`<span>${fmtKm(a.km)} km</span>`:"", a.sec?`<span>${NONRUN.has(s.type) ? fmtMin(a.sec) : fmtTime(a.sec)}</span>`:"", a.km&&a.sec?`<span>${fmtPace(a.sec,a.km)}</span>`:"", a.reps?`<span>${a.reps}× Wdh.</span>`:"", a.hr?`<span>♥ ${a.hr}</span>`:"", a.feel?`<span>${FEELS[a.feel-1]}</span>`:"", (a.tags||[]).length?`<span class="tagres">⚠ ${a.tags.map(t => TAG_SHORT[t]).filter(Boolean).join(", ")}</span>`:""].join("") : "";
   const check = st==="rest" || skip || (st !== "done" && s.date > iso(today())) ? "" : st==="done"
     ? `<span class="check done" title="Absolviert" aria-label="Absolviert">${CHECK_SVG}</span>`
     : `<button class="check ${st==="missed"?"missed":""}" data-check="${esc(s.id)}" title="Wie geplant erledigt" aria-label="${esc(TYPES[s.type]?.label)} wie geplant erledigt">${CHECK_SVG}</button>`;
@@ -1537,12 +1540,19 @@ function bindCards(){
 /* ---------- Ein-Tipp: wie geplant erledigt ---------- */
 let quickId = null, quickTimer = null;
 const strip = s => { const {id, ...b} = s; return b; };
+// Geplante Wiederholungen: Feld planReps, sonst aus dem Titel („1000m ×5“, „6 × 800 m“)
+function planRepsOf(s){
+  if (!s || s.type !== "interval") return null;
+  if (s.planReps) return +s.planReps;
+  const m = /[×x]\s*(\d+)\b/i.exec(s.title || "") || /(\d+)\s*[×x]/i.exec(s.title || "");
+  return m ? +m[1] : null;
+}
 async function quickDone(id){
   const s = state.sessions.get(id); if (!s) return;
   if (s.date > iso(today())){ toast("Einheiten in der Zukunft kannst du erst an dem Tag abhaken."); return; }
   const km = s.planKm || null, pm = planMinutes(s);
   const sec = pm ? pm*60 : (km && planPace(s) ? Math.round(km*planPace(s)) : null);
-  const body = {...strip(s), example:false, skipped:null, actual:{km, sec, hr:null, rpe:null, feel:null, notes:"", loggedAt:new Date().toISOString()}};
+  const body = {...strip(s), example:false, skipped:null, actual:{km, sec, hr:null, rpe:null, feel:null, notes:"", reps: s.type === "interval" ? planRepsOf(s) : null, loggedAt:new Date().toISOString()}};
   try { await store.save(id, body); showQuick(id); }
   catch(e){ toast("Eintragen hat nicht geklappt. Prüfe deine Verbindung."); }
 }
@@ -1689,11 +1699,11 @@ async function exportExcel(){
         "Plan Distanz (km)": s.planKm ?? "", "Plan Dauer (min)": planMinutes(s) ?? "", "Plan Zone": s.planZone && ZONES[s.planZone] ? ZONES[s.planZone].label : "", "Plan Pace (min/km)": pp ? fmtPaceSec(pp) : "",
         "Distanz (km)": a.km ?? "", "Zeit (h:mm:ss)": a.sec ? fmtTime(a.sec) : "", "Dauer (min)": a.sec ? Math.round(a.sec/6)/10 : "",
         "Pace (min/km)": a.km && a.sec ? fmtPaceSec(a.sec/a.km) : "", "Ø Puls": a.hr ?? "", "RPE": a.rpe ?? "",
-        "Gefühl": a.feel ? FEELS[a.feel-1] : "", "Beschwerden": (a.tags||[]).map(t => TAGS[t]).filter(Boolean).join(", "), "Notiz": a.notes || ""
+        "Gefühl": a.feel ? FEELS[a.feel-1] : "", "Wiederholungen": a.reps ?? "", "Beschwerden": (a.tags||[]).map(t => TAGS[t]).filter(Boolean).join(", "), "Notiz": a.notes || ""
       };
     });
     const ws = XLSX.utils.json_to_sheet(rows, {cellDates:true, dateNF:"dd.mm.yyyy"});
-    ws["!cols"] = [12,12,5,16,26,10,10,14,10,11,12,10,11,8,6,9,22,36].map(w => ({wch:w}));
+    ws["!cols"] = [12,12,5,16,26,10,10,14,10,11,12,10,11,8,6,9,13,22,36].map(w => ({wch:w}));
     ws["!autofilter"] = {ref: ws["!ref"]};
     // Wochenübersicht
     const wk = new Map();
@@ -1856,6 +1866,8 @@ function openSession(id, date, logNow){
     : (logNow && s && NONRUN.has(s.type) && planMinutes(s) ? fmtHM(planMinutes(s)*60) : "");
   $("f_hr").value = a?.hr ?? "";
   $("f_half").value = a?.half ? fmtHMS(a.half) : "";
+  { const pr = s ? planRepsOf(s) : null; $("f_repsDone").value = a?.reps ?? (pr || "");
+    $("repsHint").textContent = pr ? `Geplant: ${pr}. Gleiche Zahl, mehr km = länger ein- oder ausgelaufen.` : ""; }
   rpe = a?.rpe ?? null; syncRpe();
   feel = a?.feel ?? null; syncFeel();
   $("f_notes").value = a?.notes || "";
@@ -1921,6 +1933,7 @@ $("form").onsubmit = async e => {
     if (t && !sec){ showErr(nr ? "Dauer bitte in Minuten oder als h:mm eingeben, z. B. 90 oder 1:30." : "Zeit bitte als h:mm:ss oder mm:ss eingeben, z. B. 52:30."); return; }
     body.actual = { km: nr || $("f_km").value==="" ? null : kmv("f_km"), sec: sec || null,
       hr: nr || $("f_hr").value==="" ? null : +$("f_hr").value, rpe, feel, notes: $("f_notes").value.trim(), tags: [...tags], half: half || null,
+      reps: $("f_type").value === "interval" && $("f_repsDone").value !== "" ? +$("f_repsDone").value : null,
       loggedAt: prev?.actual?.loggedAt || new Date().toISOString() };
   } else body.actual = null;
   $("saveBtn").disabled = true;
@@ -2785,6 +2798,12 @@ function sessionFeedback(s){
     notes.push("Harte Einheit erledigt.");
     if (a.rpe >= GOALS.hardRpe) warn(`Sehr hart (${a.rpe}/10). Geh die Wiederholungen beim nächsten Mal etwas ruhiger an.`);
     else if (a.rpe && a.rpe <= 5) notes.push("Fühlte sich leicht an: ein gutes Zeichen für deine Form.");
+    const pr = planRepsOf(s), extra = a.km && s.planKm ? a.km - s.planKm : 0;
+    if (pr && a.reps){
+      if (a.reps > pr) notes.push(`${a.reps - pr} ${a.reps - pr === 1 ? "Wiederholung" : "Wiederholungen"} mehr als geplant (${a.reps} statt ${pr}). Mehr ist bei Intervallen nicht automatisch besser.`);
+      else if (a.reps < pr) notes.push(`${a.reps} von ${pr} Wiederholungen. Völlig okay, wenn die Beine nicht mehr wollten.`);
+      else if (extra >= 0.5) notes.push(`Alle ${pr} Wiederholungen wie geplant, die ${fmtKm(extra)} km mehr kommen vom Ein- oder Auslaufen.`);
+    }
   } else if (s.type === "race" && a.km >= 5 && a.sec){
     const r = raceToMarathon(a.sec, +a.km, (analysis().act || {}).kmWeek || 0), g = goalSec(state.settings && state.settings.goal);
     notes.push(a.km >= 40 ? `${fmtPaceSec(pace)} /km. Glückwunsch zum Marathon!` : `${fmtPaceSec(pace)} /km. Hochgerechnet auf den Marathon: etwa ${fmtHM(r.est - 15*60)}–${fmtHM(r.est + 15*60)} h${g ? (r.est <= g + 5*60 ? ", im Bereich deiner Zielzeit." : ` (Ziel ${fmtHM(g)}).`) : "."}`);
@@ -2794,7 +2813,7 @@ function sessionFeedback(s){
   if (RUN(s) && a.km && s.planKm){
     const r = a.km / s.planKm;
     if (r < 0.85) warn(`Kürzer als geplant (${fmtKm(a.km)} von ${fmtKm(s.planKm)} km).`);
-    else if (r > 1 + GOALS.overPlan) warn(`Länger als geplant (${fmtKm(a.km)} statt ${fmtKm(s.planKm)} km).`);
+    else if (r > 1 + GOALS.overPlan && !(s.type === "interval" && a.reps && a.reps === planRepsOf(s))) warn(`Länger als geplant (${fmtKm(a.km)} statt ${fmtKm(s.planKm)} km).`);
   }
   const sp = spikeOf(s);
   if (sp && sp.level !== "ok") warn(`${fmtKm(sp.km)} km sind ${pctStr(sp.pct)} mehr als dein längster Lauf der 30 Tage davor (${fmtKm(sp.base)} km). Steigere einzelne Läufe lieber in kleineren Schritten.`);

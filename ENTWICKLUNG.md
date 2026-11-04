@@ -87,7 +87,7 @@ Supabase-Tabelle `public.docs`, eine Zeile pro Dokument:
 | `deleted` | `true` = gelöscht (damit andere Geräte es mitbekommen) |
 | `updated_at` | per Trigger bei jeder Änderung gesetzt, Grundlage des Abgleichs |
 
-**`sessions/<id>`** (eine Einheit): `date` (JJJJ-MM-TT), `type`, `title`, `planKm`, `planMin`, `planZone`, `planPace` (Sekunden pro km), `planReps`, `planRepDist` (m), `desc`, `example`, `created`, `actual` (`null` oder `{km, sec, hr, rpe, feel, notes, half, loggedAt}`; `half` = Halbzeit in Sekunden, nur bei Wettkämpfen), `skipped` (`null` oder `{reason: sick|injury|other, from, to, at}` – ausgefallen, zählt nicht als geplant), `adj` (`null` oder `{reason, orig}` – nach Ausfall angepasst, `orig` = ursprüngliche Planfelder).
+**`sessions/<id>`** (eine Einheit): `date` (JJJJ-MM-TT), `type`, `title`, `planKm`, `planMin`, `planZone`, `planPace` (Sekunden pro km), `planReps`, `planRepDist` (m), `desc`, `example`, `created`, `actual` (`null` oder `{km, sec, hr, rpe, feel, notes, tags, half, reps, loggedAt}`; `tags` = Beschwerden aus `TAGS` (`knee`, `shin`, `ankle`, `tired`), `half` = Halbzeit in Sekunden, nur bei Wettkämpfen, `reps` = gelaufene Wiederholungen bei Intervallen), `skipped` (`null` oder `{reason: sick|injury|other, from, to, at}` – ausgefallen, zählt nicht als geplant), `adj` (`null` oder `{reason, orig}` – nach Ausfall angepasst, `orig` = ursprüngliche Planfelder).
 
 **`settings/main`:** `raceName`, `raceDate`, `goal` (h:mm:ss), `easyHrMax` (Puls-Obergrenze lockere Läufe), `look` (`dark` | `light` | `minimal` | `sunrise`), `colors` (eigene Farben je Art).
 

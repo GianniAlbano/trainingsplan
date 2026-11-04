@@ -1,6 +1,6 @@
 # Trainingsplan-App – Entwicklerhandbuch
 
-Stand: 04.11.2026 · App-Version `2026-11-04-4`
+Stand: 04.11.2026 · App-Version `2026-11-04-5`
 
 Diese Datei ist der Einstieg für jeden Chat, der am Code arbeitet. Sie liegt im Repository; das Claude-Projekt „Marathon incoming“ verweist nur noch hierher.
 
@@ -24,7 +24,7 @@ Claude ist über die GitHub-App nur mit diesem Repository verbunden. `main` ist 
 2. **Änderung:** auf einem neuen Zweig `claude/<kurzer-name>`. Nur ändern, was gewünscht ist; im Browser testen (Handy- und Webansicht, ohne Skriptfehler).
 3. **Bei jeder App-Änderung** `VERSION` in `sw.js` erhöhen (Format `JJJJ-MM-TT-n`) und den CHANGELOG ergänzen; dieses Handbuch anpassen, wenn sich Aufbau oder Regeln ändern.
 4. **Pull Request** mit kurzer Beschreibung auf Deutsch: was, warum, wie getestet. Claude schickt Gianni den Link.
-5. **Freigabe:** Gianni prüft unter *Files changed* und klickt *Merge pull request* → *Confirm merge* (danach *Delete branch*). Nach 1–2 Minuten ist die Version live, auf dem Handy aktiv beim übernächsten Öffnen der App.
+5. **Freigabe:** Gianni prüft unter *Files changed* und klickt *Merge pull request* → *Confirm merge* (danach *Delete branch*). Nach 1–2 Minuten ist die Version live; die App lädt sie beim nächsten Öffnen oder Zurückkehren von selbst (einmaliger Neustart der Seite).
 
 Ändert Gianni selbst etwas direkt in GitHub, ist das in Ordnung – Claude startet ohnehin immer vom aktuellen `main`.
 

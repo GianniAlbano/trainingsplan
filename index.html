@@ -3327,12 +3327,26 @@ $("importFile").addEventListener("change", async e => {
   } catch(err){ toast("Die Datei konnte nicht gelesen werden. Wähle eine Sicherung aus dieser App."); }
 });
 
-/* Offline-Unterstützung */
+/* Offline-Unterstützung und Updates
+   Neue Versionen kommen von selbst: Beim Öffnen und bei jeder Rückkehr in die App wird nach einer neuen
+   Version gesucht. Übernimmt der neue Service Worker, lädt die Seite einmal neu – aber nie, während
+   ein Fenster offen ist (dann sobald es geschlossen ist). */
 if ("serviceWorker" in navigator && location.protocol !== "file:"){
-  navigator.serviceWorker.register("sw.js").then(reg => {
+  const hadCtrl = !!navigator.serviceWorker.controller;
+  let reloading = false;
+  const reloadWhenIdle = () => {
+    if (reloading) return;
+    if (document.querySelector("dialog[open]") || (td && td.active)){ setTimeout(reloadWhenIdle, 1500); return; }
+    reloading = true; location.reload();
+  };
+  navigator.serviceWorker.addEventListener("controllerchange", () => { if (hadCtrl) reloadWhenIdle(); });
+  navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then(reg => {
+    const check = () => reg.update().catch(() => {});
+    document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") check(); });
+    addEventListener("focus", check);
     reg.addEventListener("updatefound", () => {
       const w = reg.installing; if (!w) return;
-      w.addEventListener("statechange", () => { if (w.state === "installed" && navigator.serviceWorker.controller) toast("Neue Version geladen. Sie ist beim nächsten Öffnen aktiv."); });
+      w.addEventListener("statechange", () => { if (w.state === "installed" && navigator.serviceWorker.controller) toast("Neue Version wird geladen …"); });
     });
   }).catch(() => {});
 }

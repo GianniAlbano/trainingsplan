@@ -2,7 +2,8 @@
 
 Neueste Version oben. Die Version entspricht `VERSION` in `sw.js`.
 
-## 2026-11-04-1 · Nachricht des Tages, Weg in der Analyse, keine Zukunft abhaken
+## 2026-11-04-2 · Nachricht des Tages, Weg in der Analyse, keine Zukunft abhaken
+- Nachricht des Tages: zusätzliche Begrüßungen „Hey sexy!“, „Hey beautiful!“, „Hello, gorgeous!“, „Hey good-looking!“ (kommen ab und zu, etwa an jedem 4.–5. Tag).
 - „Heute“ (Handy): Die beiden Ringe sind kleiner. Darunter steht eine **Nachricht des Tages** auf Englisch: Begrüßung, was heute ansteht (Rest day, Easy run, Long run, Intervals, Tempo, Race, Bouldern …) und ggf. ein Tipp für morgen (z. B. vor dem langen Lauf genug essen) sowie Countdown-Meilensteine. Sie wechselt täglich und bleibt den ganzen Tag gleich; erledigt, krank oder Ruhetag haben eigene Texte. Texte und Auswahl in der neuen Datei `messages.js` (auch für eine spätere Push-Nachricht nutzbar).
 - „Weg zum Rennen“ ist von „Heute“ in den Tab „Analyse“ gewandert (erste Seite). Der Formcheck-Knopf auf „Heute“ öffnet jetzt direkt die Formcheck-Seite.
 - Einheiten in der Zukunft lassen sich nicht mehr als absolviert markieren: kein Haken auf der Karte, „Absolviert“ im Dialog gesperrt (mit Hinweis), Speichern einer absolvierten Einheit mit Datum in der Zukunft wird abgelehnt, erledigte Einheiten lassen sich nicht in die Zukunft ziehen.

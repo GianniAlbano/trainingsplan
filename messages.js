@@ -7,7 +7,8 @@
     "Good morning, sunshine! ☀️", "Hey legend!", "Rise and shine, future marathoner!", "Hello, speedy!",
     "Morning, champ!", "Hey you with the strong legs!", "Hi there, superstar!", "Well hello, marathon machine!",
     "Hey hey, happy feet!", "Guten Morgen… oops, wrong language. Good morning, legend!", "Look who's up, the runner of the year!",
-    "Hello, fast friend!", "Ahoy, captain of the running crew!", "Hey there, kilometre collector!"
+    "Hello, fast friend!", "Ahoy, captain of the running crew!", "Hey there, kilometre collector!",
+    "Hey sexy! 😏", "Hey beautiful!", "Hello, gorgeous!", "Hey good-looking! 😎"
   ];
   const GREET_DAY = {
     1: ["Happy Monday! Fresh week, fresh legs.", "Monday again, and you're still awesome."],

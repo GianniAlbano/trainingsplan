@@ -1,9 +1,9 @@
 // Offline-Speicher der App. Bei jeder neuen Version VERSION erhöhen,
 // dann laden alle Geräte die neuen Dateien beim nächsten Öffnen.
-const VERSION = "2026-10-29-3";
+const VERSION = "2026-11-04-1";
 const CACHE = "trainingsplan-" + VERSION;
 const FILES = [
-  "./", "index.html", "config.js", "manifest.webmanifest",
+  "./", "index.html", "config.js", "messages.js", "manifest.webmanifest",
   "vendor/supabase.js", "vendor/xlsx.full.min.js",
   "fonts/lato-300.woff2", "fonts/lato-400.woff2", "fonts/lato-700.woff2", "fonts/lato-900-italic.woff2",
   "icons/icon-192.png", "icons/icon-512.png", "icons/icon-maskable-512.png", "icons/apple-touch-icon.png"

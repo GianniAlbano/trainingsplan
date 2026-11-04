@@ -2,6 +2,11 @@
 
 Neueste Version oben. Die Version entspricht `VERSION` in `sw.js`.
 
+## 2026-11-04-1 · Nachricht des Tages, Weg in der Analyse, keine Zukunft abhaken
+- „Heute“ (Handy): Die beiden Ringe sind kleiner. Darunter steht eine **Nachricht des Tages** auf Englisch: Begrüßung, was heute ansteht (Rest day, Easy run, Long run, Intervals, Tempo, Race, Bouldern …) und ggf. ein Tipp für morgen (z. B. vor dem langen Lauf genug essen) sowie Countdown-Meilensteine. Sie wechselt täglich und bleibt den ganzen Tag gleich; erledigt, krank oder Ruhetag haben eigene Texte. Texte und Auswahl in der neuen Datei `messages.js` (auch für eine spätere Push-Nachricht nutzbar).
+- „Weg zum Rennen“ ist von „Heute“ in den Tab „Analyse“ gewandert (erste Seite). Der Formcheck-Knopf auf „Heute“ öffnet jetzt direkt die Formcheck-Seite.
+- Einheiten in der Zukunft lassen sich nicht mehr als absolviert markieren: kein Haken auf der Karte, „Absolviert“ im Dialog gesperrt (mit Hinweis), Speichern einer absolvierten Einheit mit Datum in der Zukunft wird abgelehnt, erledigte Einheiten lassen sich nicht in die Zukunft ziehen.
+
 ## 2026-10-29-3 · Übungen
 - Neue Übersicht **Übungen** mit vier Bereichen: Stabi-Grundprogramm (8 Übungen, 2× pro Woche) sowie Übungen bei Knie-, Schienbein- und Sprunggelenkschmerzen. Jede Übung als Kasten mit Dosierung; antippen zeigt Ausführung und wofür sie gut ist. Bei Beschwerden zusätzlich Schmerz-Ampel und „Beim Laufen“-Hinweis mit Warnzeichen, wann ärztlich abklären.
 - Erreichbar über Einstellungen → „Übungen“, beim Eintragen direkt unter der Beschwerden-Auswahl („Übungen bei …“) und in der Rückmeldung nach dem Speichern, wenn Schmerzen notiert sind.

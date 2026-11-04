@@ -2,7 +2,8 @@
 
 Neueste Version oben. Die Version entspricht `VERSION` in `sw.js`.
 
-## 2026-11-04-3 · Nachricht des Tages, Weg in der Analyse, keine Zukunft abhaken, Wiederholungen
+## 2026-11-04-4 · Nachricht des Tages, Weg in der Analyse, keine Zukunft abhaken, Wiederholungen
+- „Heute“: Der Hinweis „… Einheiten der letzten Tage offen“ entfällt. Offene Einheiten siehst du weiter in der Woche (roter Haken); „Ausfall eintragen“ gibt es in jeder Einheit und in den Einstellungen.
 - Nachricht des Tages: Begrüßungen wie „Hey sexy!“, „Hey beautiful!“, „Hello, gorgeous!“, „Hey good-looking!“, „Hey handsome!“ kommen an etwa jedem zweiten Tag.
 - Intervalle: Beim Eintragen neues Feld **Wiederholungen** (`actual.reps`), vorbelegt mit der geplanten Zahl (aus `planReps` oder dem Titel, z. B. „1000m ×5“; Hilfsfunktion `planRepsOf`). Die Rückmeldung unterscheidet: mehr Wiederholungen als geplant, weniger, oder gleich viele mit mehr km (= länger ein- oder ausgelaufen; dann kein „Länger als geplant“). Wiederholungen erscheinen auf der Karte und im Excel-Export. Der Haken übernimmt die geplante Zahl.
 - „Heute“ (Handy): Die beiden Ringe sind kleiner. Darunter steht eine **Nachricht des Tages** auf Englisch: Begrüßung, was heute ansteht (Rest day, Easy run, Long run, Intervals, Tempo, Race, Bouldern …) und ggf. ein Tipp für morgen (z. B. vor dem langen Lauf genug essen) sowie Countdown-Meilensteine. Sie wechselt täglich und bleibt den ganzen Tag gleich; erledigt, krank oder Ruhetag haben eigene Texte. Texte und Auswahl in der neuen Datei `messages.js` (auch für eine spätere Push-Nachricht nutzbar).

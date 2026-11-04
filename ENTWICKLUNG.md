@@ -1,6 +1,6 @@
 # Trainingsplan-App – Entwicklerhandbuch
 
-Stand: 04.11.2026 · App-Version `2026-11-04-3`
+Stand: 04.11.2026 · App-Version `2026-11-04-4`
 
 Diese Datei ist der Einstieg für jeden Chat, der am Code arbeitet. Sie liegt im Repository; das Claude-Projekt „Marathon incoming“ verweist nur noch hierher.
 
@@ -60,7 +60,7 @@ Die Datei ist in Abschnitte mit Kommentar-Überschriften gegliedert (`/* -------
 - Konstanten: `TYPES` (Trainingsarten), `NONRUN` (Arten ohne Strecke: Kraft, Bouldern, Ruhetag), `FEELS`, `ZONES` (Pace-Zonen relativ zum Marathontempo), Hilfsfunktionen für Datum, Zeit, Pace.
 - **Speicher** (`store`, `put`, `syncNow`, `init`): lokal zuerst in `localStorage` (`tp.v2.<user-id>`, ohne Konto `tp.v2.local`) mit `docs`, `outbox` (wartende Änderungen) und `lastSync`. Abgleich mit Supabase: erst `outbox` hochladen (upsert), dann Änderungen seit `lastSync` holen. Anmeldung, Registrierung, Passwort zurücksetzen in derselben Sektion.
 - **Rendering Web:** `render()`, `renderHero`, `renderWeek`, `renderMonth`, `renderHalf` (oben Formzeit, Einzelfaktoren, Bereitschaft, Prognose, Fitness, Formcheck).
-- **Handy-App:** `renderMobile()` mit `mToday` (Ringe, Nachricht des Tages über `todayMessage()` → `TP_MESSAGES.build`, Formcheck, offene Einheiten), `mWeek`, `mMonth`, `mHalf` (Tab „Analyse“: Weg zum Rennen über `pathWeeks`/`pathHtml`, Formzeit, Woher sie kommt, Bereitschaft, Prognose, Fitness, Formcheck, dann Wochen-km mit Halbjahres-Zahlen, Monate, Arten; `fitSlides()` sorgt dafür, dass jede Seite ohne Scrollen passt); Zustand in `M`.
+- **Handy-App:** `renderMobile()` mit `mToday` (Ringe, Nachricht des Tages über `todayMessage()` → `TP_MESSAGES.build`, Formcheck), `mWeek`, `mMonth`, `mHalf` (Tab „Analyse“: Weg zum Rennen über `pathWeeks`/`pathHtml`, Formzeit, Woher sie kommt, Bereitschaft, Prognose, Fitness, Formcheck, dann Wochen-km mit Halbjahres-Zahlen, Monate, Arten; `fitSlides()` sorgt dafür, dass jede Seite ohne Scrollen passt); Zustand in `M`.
 - **Übungen** (Dialog `#toolDlg`): Inhalte in `EX` (Bereiche `stabi`, `knee`, `shin`, `ankle` – Schlüssel wie in `TAGS`), Schmerz-Ampel `AMPEL`, Anzeige `openExercises(view)`/`renderExercises`.
 - **Ausfall & Plan anpassen** (Dialog `#toolDlg`): `openPause`/`pausePlan` (Ausfall mit Wiedereinstieg), `openPlanTool`/`planChanges` (Sammeländerungen), gemeinsam `applyBulk`/`undoBulk`.
 - **Dialoge:** Einheit (`openSession`, Formular `#form`), Wettkampf & Ziele (`openRace`), Einstellungen (`renderMore`, Ansichten `main`, `design`, `colors`, `data`, `account`), Schnellbewertung nach dem Haken (`renderQuick`).

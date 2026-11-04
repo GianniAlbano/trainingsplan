@@ -2034,18 +2034,15 @@ function mToday(){
       : days === 0 ? `<div class="count"><span class="big">Heute</span><span class="lbl">Renntag</span></div>`
       : `<div class="count"><span class="big num">${-days}</span><span class="lbl">Tage seit dem Rennen</span></div>`;
   } else count = `<div class="count"><span class="lbl">Countdown</span><button class="btn ghost sm" id="mRace">Renndatum eintragen</button></div>`;
-  const missed = list().filter(s => status(s)==="missed" && s.date >= iso(addDays(t,-7))).sort(byDate);
   $("mBody").innerHTML = `
     <div class="mrings">${count}
       <div class="mring">${ringSvg(pct)}<span class="lbl">Diese Woche</span><span class="val num">${fmtKm(wt.doneKm)} <small>/ ${fmtKm(wt.planKm)} km</small></span></div></div>
     <div class="mfit" id="mFit">
       ${(() => { const m = todayMessage(); return m ? `<div class="mmsg" lang="en"><span class="ml">Today · ${esc(m.label)}</span><p>${esc(m.text)}</p></div>` : ""; })()}
       ${(() => { const f = formcheck(); return f.verdict.level === "na" ? "" : `<button class="mfc fc-${f.verdict.level} fitdrop" id="mFc"><b>${f.verdict.label}</b><span>${f.checks.filter(c => c.level !== "ok").map(c => c.title).join(" · ") || "Alle Ziele im grünen Bereich"}</span></button>`; })()}
-      ${missed.length ? `<div class="mnotice fitdrop"><span>${missed.length===1 ? "1 Einheit" : missed.length+" Einheiten"} der letzten Tage offen</span><span class="acts"><button class="mlink" id="mMissedSick" data-from="${missed[0].date}">Ausfall</button><button class="mlink" data-goto="${missed[0].date}">Ansehen</button></span></div>` : ""}
     </div>`;
   if ($("mRace")) $("mRace").onclick = openRace;
   if ($("mFc")) $("mFc").onclick = () => { M.tab = "half"; M.slideTo = "Formcheck"; M.half = today(); render(); };
-  if ($("mMissedSick")) $("mMissedSick").onclick = () => openPause($("mMissedSick").dataset.from, iso(addDays(t,-1)));
   // Alles muss ohne Scrollen passen: erst kleinere Ringe, dann Nebensachen ausblenden
   requestAnimationFrame(() => {
     const fit = $("mFit"); if (!fit) return;

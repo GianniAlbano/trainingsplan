@@ -1,6 +1,6 @@
 // Offline-Speicher der App. Bei jeder neuen Version VERSION erhöhen,
 // dann laden alle Geräte die neuen Dateien beim nächsten Öffnen.
-const VERSION = "2026-11-04-4";
+const VERSION = "2026-11-06-1";
 const CACHE = "trainingsplan-" + VERSION;
 const FILES = [
   "./", "index.html", "config.js", "messages.js", "manifest.webmanifest",
@@ -10,7 +10,8 @@ const FILES = [
 ];
 
 self.addEventListener("install", e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
+  // cache:"reload" holt jede Datei frisch vom Server, nicht aus dem Browser-Cache
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES.map(f => new Request(f, { cache: "reload" })))).then(() => self.skipWaiting()));
 });
 self.addEventListener("activate", e => {
   e.waitUntil(caches.keys()
@@ -24,13 +25,13 @@ self.addEventListener("activate", e => {
 self.addEventListener("fetch", e => {
   const req = e.request, url = new URL(req.url);
   if (req.method !== "GET" || url.origin !== location.origin) return;
-  const fresh = req.mode === "navigate" || url.pathname.endsWith("/config.js") || url.pathname.endsWith("/index.html");
+  const fresh = req.mode === "navigate" || /\/(index\.html|config\.js|messages\.js)$/.test(url.pathname);
   if (fresh){
     e.respondWith((async () => {
       const cache = await caches.open(CACHE);
       try {
         const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), 4000);
-        const res = await fetch(req, { signal: ctrl.signal }); clearTimeout(t);
+        const res = await fetch(req, { signal: ctrl.signal, cache: "no-cache" }); clearTimeout(t);
         if (res.ok) cache.put(req.mode === "navigate" ? "index.html" : req, res.clone());
         return res;
       } catch(err){

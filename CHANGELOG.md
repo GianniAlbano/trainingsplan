@@ -2,6 +2,16 @@
 
 Neueste Version oben. Die Version entspricht `VERSION` in `sw.js`.
 
+## 2026-11-06-1 · Neue Einheit aufgeräumt, Nachrichten ohne Emojis
+- Neue Einheit anlegen: nur noch Datum und Art, bei Intervallen Anzahl und Strecke je Wiederholung, dann **einmal** Distanz, Dauer und Ø Puls. Darunter nur „Absolviert“ und das Ausklappfeld „Anstrengung, Gefühl & Notiz“. Zielpace, Beschreibung und die doppelten Plan-/Ist-Felder entfallen hier. Mit Haken werden die Werte als gelaufen gespeichert (und als Plan übernommen); ohne Haken – etwa für einen Tag in der Zukunft – als Plan. Liegt das Datum in der Zukunft, ist der Haken aus und gesperrt.
+- Datumsfelder auf dem iPhone schieben sich nicht mehr über das Nachbarfeld (feste Eigenbreite von iOS aufgehoben, Felder im Raster begrenzt).
+- Bestehende Einheiten unverändert: Plan als Zusammenfassung mit „Plan bearbeiten“, darunter Absolviert mit Distanz, Zeit, Puls.
+- Nachricht des Tages ohne Emojis.
+
+## 2026-11-04-5 · Neue Versionen kommen von selbst an
+- Die installierte App sucht beim Öffnen und bei jeder Rückkehr aus dem Hintergrund nach einer neuen Version (`reg.update()`, `updateViaCache: "none"`). Übernimmt der neue Service Worker, lädt die Seite einmal von selbst neu – nie während ein Fenster offen ist, dann gleich danach. Bisher blieb auf dem iPhone oft die alte Version sichtbar, bis die App ganz geschlossen wurde.
+- Der Service Worker umgeht dabei den Browser-Cache: Beim Installieren werden alle Dateien frisch geladen (`cache: "reload"`), `index.html`, `config.js` und `messages.js` kommen zuerst aus dem Netz (`cache: "no-cache"`).
+
 ## 2026-11-04-4 · Nachricht des Tages, Weg in der Analyse, keine Zukunft abhaken, Wiederholungen
 - „Heute“: Der Hinweis „… Einheiten der letzten Tage offen“ entfällt. Offene Einheiten siehst du weiter in der Woche (roter Haken); „Ausfall eintragen“ gibt es in jeder Einheit und in den Einstellungen.
 - Nachricht des Tages: Begrüßungen wie „Hey sexy!“, „Hey beautiful!“, „Hello, gorgeous!“, „Hey good-looking!“, „Hey handsome!“ kommen an etwa jedem zweiten Tag.

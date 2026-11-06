@@ -382,6 +382,17 @@ body.dragging{-webkit-user-select:none;user-select:none}
 .moredet summary::-webkit-details-marker{display:none}
 .moredet summary em{font-style:normal;font-weight:400;letter-spacing:.02em;text-transform:none;color:var(--muted);margin-left:8px}
 .row.three{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.row.two{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+/* iOS: Datumsfelder haben sonst eine feste Eigenbreite und schieben sich über das Nachbarfeld */
+input[type=date]{-webkit-appearance:none;appearance:none;display:block;width:100%;max-width:100%;min-height:38px;box-sizing:border-box}
+input[type=date]::-webkit-date-and-time-value{text-align:left;margin:0}
+.row > *{min-width:0}
+/* Neue Einheit: nur Datum, Art, (Intervalle: Anzahl, Strecke), Distanz, Dauer, Puls – dann Absolviert + Details */
+#form.create .planonly,
+#form.create #logFields .intonly,
+#form.create #logFields .raceonly,
+#form.create .pacebox{display:none!important}
+#form.create #measure{margin-top:2px}
 #logFields .row.intonly{grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:10px;align-items:end}
 #repsHint{padding-bottom:8px}
 .nonrun .row.three{grid-template-columns:1fr}
@@ -952,30 +963,30 @@ form:not(.israce) .raceonly{display:none!important}
     </div>
     <div class="sinfo" id="sInfo" hidden></div>
     <fieldset id="planEdit">
-      <div class="row">
+      <div class="row two">
         <label>Datum<input type="date" id="f_date" required></label>
         <label>Art<select id="f_type"></select></label>
       </div>
-      <div class="row intonly">
+      <div class="row two intonly">
         <label>Anzahl<input type="number" id="f_reps" min="1" step="1" inputmode="numeric" placeholder="6"></label>
         <label>Strecke je Wdh. (m)<input type="number" id="f_repDist" min="0" step="50" inputmode="numeric" placeholder="800"></label>
       </div>
-      <div class="row">
+      <div class="row planonly">
         <label class="runonly">Distanz (km)<input type="text" id="f_planKm" inputmode="decimal" data-dec autocomplete="off" placeholder="10,5"></label>
         <label>Dauer (min)<input type="number" id="f_planMin" min="0" step="1" inputmode="numeric"></label>
       </div>
-      <div class="row runonly">
+      <div class="row runonly planonly">
         <label>Zielpace<select id="f_zone"></select></label>
         <label id="customPace">Eigene Pace (min/km)<input type="text" id="f_planPace" placeholder="5:30" inputmode="numeric" data-mask="ms" autocomplete="off"></label>
       </div>
-      <span class="hint runonly" id="paceHint"></span>
-      <label>Beschreibung<textarea id="f_desc" rows="2" placeholder="Aufbau, Pausen, Fokus …"></textarea></label>
+      <span class="hint runonly planonly" id="paceHint"></span>
+      <label class="planonly">Beschreibung<textarea id="f_desc" rows="2" placeholder="Aufbau, Pausen, Fokus …"></textarea></label>
     </fieldset>
     <div class="logbox">
       <label class="toggle"><input type="checkbox" id="f_done"> Absolviert</label>
       <span class="hint" id="doneHint" hidden></span>
       <div id="logFields" class="logfields" hidden>
-        <div class="row three">
+        <div class="row three" id="measure">
           <label class="runonly">Distanz (km)<input type="text" id="f_km" inputmode="decimal" data-dec autocomplete="off" placeholder="10,25"></label>
           <label><span id="timeLbl">Zeit</span><input type="text" id="f_time" placeholder="0:52:30" inputmode="numeric" data-mask="hms" autocomplete="off"></label>
           <label class="runonly">Ø Puls<input type="number" id="f_hr" min="40" max="230" inputmode="numeric" placeholder="142"></label>
@@ -1756,6 +1767,7 @@ const parseDur = s => { const p = String(s||"").trim().split(":").map(Number);
 // Absolviert geht nur für heute und vergangene Tage
 function syncDoneAllowed(){
   const future = ($("f_date").value || iso(today())) > iso(today()), cb = $("f_done");
+  if (future && cb.checked && $("form").classList.contains("create")){ cb.checked = false; $("logFields").hidden = true; $("form").classList.remove("logging"); }
   cb.disabled = future && !cb.checked;
   $("doneHint").hidden = !future;
   $("doneHint").textContent = cb.checked ? "Das Datum liegt in der Zukunft. Absolvierte Einheiten bitte auf heute oder früher legen." : "Abhaken kannst du die Einheit ab dem Tag, an dem sie geplant ist.";
@@ -1803,7 +1815,7 @@ function applyKind(){
   $("form").classList.toggle("israce", t === "race");
   $("form").style.setProperty("--tc", `var(--t-${t})`);
   $("sChip").textContent = TYPES[t]?.label || ""; $("sChip").style.setProperty("--tc", `var(--t-${t})`);
-  $("timeLbl").textContent = nr ? "Dauer (h:mm)" : "Zeit (h:mm:ss)";
+  $("timeLbl").textContent = nr ? "Dauer (h:mm)" : $("form").classList.contains("create") ? "Dauer (h:mm:ss)" : "Zeit (h:mm:ss)";
   $("f_time").placeholder = nr ? "1:30" : "0:52:30";
   $("f_time").dataset.mask = nr ? "hm" : "hms";
 }
@@ -1856,9 +1868,13 @@ function openSession(id, date, logNow){
   // Bestehende Einheit: Plan als kurze Zusammenfassung, Bearbeiten auf Wunsch
   if (s){ $("pvKv").innerHTML = planSummary(s); $("pvDesc").textContent = s.desc || ""; }
   showPlanEdit(!s);
+  // Neue Einheit: eine Zeile für Distanz, Dauer, Puls direkt unter Datum/Art
+  $("form").classList.toggle("create", !s);
+  if (!s) $("planEdit").after($("measure")); else $("logFields").prepend($("measure"));
+  applyKind();
   renderSessionInfo(s);
   const a = s?.actual;
-  $("f_done").checked = !!a || (!!logNow && iso(dt) <= iso(today()));
+  $("f_done").checked = !!a || ((!!logNow || !s) && iso(dt) <= iso(today()));
   syncDoneAllowed();
   $("logFields").hidden = !$("f_done").checked; $("form").classList.toggle("logging", $("f_done").checked);
   $("f_km").value = decStr(a?.km ?? (logNow && s?.planKm && !NONRUN.has(s.type) ? s.planKm : null));
@@ -1911,6 +1927,13 @@ $("form").onsubmit = async e => {
   e.preventDefault();
   const date = $("f_date").value; if (!date){ showPlanEdit(true); showErr("Bitte ein Datum wählen."); return; }
   const prev = editing ? state.sessions.get(editing) : null, nr = isNonrun();
+  if (!prev){
+    const t = $("f_time").value.trim(), sec = t ? (nr ? parseDur(t) : parseTime(t)) : 0;
+    if (t && (!sec || t.split(":").slice(1).some(x => +x > 59))){ showErr(nr ? "Dauer bitte als h:mm eingeben, z. B. 1:30." : "Dauer bitte als h:mm:ss oder mm:ss eingeben, z. B. 52:30."); return; }
+    $("f_planKm").value = $("f_km").value; $("f_planMin").value = sec ? Math.round(sec / 60) : "";
+    $("f_zone").value = ""; $("f_planPace").value = ""; $("f_desc").value = "";
+    $("f_repsDone").value = $("f_reps").value;
+  }
   const zone = nr ? null : ($("f_zone").value || (!mpSec() && prev?.planZone) || null);
   const pRaw = $("f_planPace").value.trim(), pSec = parseTime(pRaw);
   if (!nr && !zone && pRaw && (!pSec || !pRaw.includes(":"))){ showPlanEdit(true); showErr("Pace bitte als m:ss eingeben, z. B. 5:30."); return; }

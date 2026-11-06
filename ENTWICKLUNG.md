@@ -1,6 +1,6 @@
 # Trainingsplan-App – Entwicklerhandbuch
 
-Stand: 04.11.2026 · App-Version `2026-11-04-5`
+Stand: 06.11.2026 · App-Version `2026-11-06-1`
 
 Diese Datei ist der Einstieg für jeden Chat, der am Code arbeitet. Sie liegt im Repository; das Claude-Projekt „Marathon incoming“ verweist nur noch hierher.
 
@@ -131,6 +131,7 @@ Abschnitt „Analyse“ im JavaScript, nach dem Formcheck. Herleitung und Quelle
 - Installierte App: `html.standalone` (gesetzt im `<head>`) hält oben mindestens `--top-gap` + 12 px frei, auch wenn iOS keinen Abstand meldet.
 - Handy-Rahmen: `.app` liegt mit `position:fixed; inset:0` über dem ganzen Bildschirm. Die Statusleiste hält `.app` frei (`padding-top`), den Home-Balken nur die Tab-Leiste `.mtabs`. Diese Abstände nie zusätzlich auf `html`/`:root` legen, sonst werden sie doppelt gerechnet.
 - Texte auf Deutsch, Du-Form, kurz und konkret. Ausnahme: die Nachricht des Tages ist auf Englisch.
+- Einheiten-Dialog: Neue Einheit = Klasse `create` am Formular (Planfelder `.planonly` ausgeblendet, Messzeile `#measure` wandert unter Datum/Art; beim Speichern werden die Werte in die Planfelder kopiert). Bestehende Einheit = Planansicht + Absolviert mit `#measure` in `#logFields`.
 - Absolviert nur für heute oder früher (`syncDoneAllowed`, Prüfung in `quickDone`, beim Speichern und Verschieben). Zahlen mit deutschem Format (Komma).
 
 ## Offene Ideen
